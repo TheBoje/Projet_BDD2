@@ -54,3 +54,14 @@ INTO Borrower (name, firstname, adress, phoneNumber, BorrowerTypeID) VALUES ('de
 INTO Borrower (name, firstname, adress, phoneNumber, BorrowerTypeID) VALUES ('10', 'Ben', 'Dans son omnitrix', '0788836788', 2)
 INTO Borrower (name, firstname, adress, phoneNumber, BorrowerTypeID) VALUES ('Vador', 'Dark', 'Etoile Noir', '0788836788', 3)
 SELECT 1 FROM DUAL;
+
+-- Insertion de documents
+Insert into PROJET.DOCUMENT (TITLE,MAINTHEME,QUANTITY,DEPARTMENT,EDITORID,DOCUMENTTYPEID) values ('1984','Scienc-Fiction','3','4','1','1');
+Insert into PROJET.DOCUMENT (TITLE,MAINTHEME,QUANTITY,DEPARTMENT,EDITORID,DOCUMENTTYPEID) values ('La génération procédurale','Informatique','4','1','2','1');
+Insert into PROJET.DOCUMENT (TITLE,MAINTHEME,QUANTITY,DEPARTMENT,EDITORID,DOCUMENTTYPEID) values ('Le Silmarillon','Fantaisie','1','2','1','1');
+Insert into PROJET.DOCUMENT (TITLE,MAINTHEME,QUANTITY,DEPARTMENT,EDITORID,DOCUMENTTYPEID) values ('Le Seigneur des Anneaux','Fantaisie','2','2','1','1');
+Insert into PROJET.DOCUMENT (TITLE,MAINTHEME,QUANTITY,DEPARTMENT,EDITORID,DOCUMENTTYPEID) values ('Algorithmic Beauty of Plants','Informatique','4','3','2','1');
+Insert into PROJET.DOCUMENT (TITLE,MAINTHEME,QUANTITY,DEPARTMENT,EDITORID,DOCUMENTTYPEID) values ('Toy Story 1','Dessin-Animé','0','5','2','2');
+Insert into PROJET.DOCUMENT (TITLE,MAINTHEME,QUANTITY,DEPARTMENT,EDITORID,DOCUMENTTYPEID) values ('Apocalypse 2nd Guerre  Mondial','Documentaire','2','5','2','2');
+Insert into PROJET.DOCUMENT (TITLE,MAINTHEME,QUANTITY,DEPARTMENT,EDITORID,DOCUMENTTYPEID) values ('Adibou The Movie','Educatif','4','6','2','3');
+Insert into PROJET.DOCUMENT (TITLE,MAINTHEME,QUANTITY,DEPARTMENT,EDITORID,DOCUMENTTYPEID) values ('The test project','Mathématiques','0','4','1','4');
