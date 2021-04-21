@@ -90,7 +90,8 @@ CREATE TABLE Document_Author
 CREATE TABLE BorrowerType
 (
     ID          INT PRIMARY KEY NOT NULL,
-    borrower    VARCHAR(20)
+    borrower    VARCHAR(20),
+    nbBorrowMax INT
 );
 
 CREATE TABLE BorrowerType_DocumentType
@@ -98,7 +99,6 @@ CREATE TABLE BorrowerType_DocumentType
     BorrowerTypeID      INT NOT NULL,
     DocumentTypeID      INT NOT NULL,
     durationBorrowMax   INT,
-    nbBorrowMax         INT,
 
     PRIMARY KEY (BorrowerTypeID, DocumentTypeID),
     FOREIGN KEY (BorrowerTypeID) REFERENCES BorrowerType(ID),
@@ -112,7 +112,6 @@ CREATE TABLE Borrower
     firstname       VARCHAR(63),
     adress          VARCHAR(255),
     phoneNumber     VARCHAR(10),
-    nbBorrow        INT,
     BorrowerTypeID  INT,
 
     FOREIGN KEY (BorrowerTypeID) REFERENCES BorrowerType(ID)
