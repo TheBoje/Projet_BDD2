@@ -1,14 +1,13 @@
 --------------------------------------------------------
---  Fichier créé - mercredi-avril-21-2021   
+--  Fichier créé - jeudi-avril-22-2021   
 --------------------------------------------------------
-REM INSERTING into PROJET.DOCUMENT
+REM INSERTING into PROJET.DOCUMENT_BORROWER
 SET DEFINE OFF;
-Insert into PROJET.DOCUMENT (TITLE,MAINTHEME,QUANTITY,DEPARTMENT,EDITORID,DOCUMENTTYPEID) values ('1984','Scienc-Fiction','3','4','1','1');
-Insert into PROJET.DOCUMENT (TITLE,MAINTHEME,QUANTITY,DEPARTMENT,EDITORID,DOCUMENTTYPEID) values ('La génération procédurale','Informatique','4','1','2','1');
-Insert into PROJET.DOCUMENT (TITLE,MAINTHEME,QUANTITY,DEPARTMENT,EDITORID,DOCUMENTTYPEID) values ('Le Silmarillon','Fantaisie','1','2','1','1');
-Insert into PROJET.DOCUMENT (TITLE,MAINTHEME,QUANTITY,DEPARTMENT,EDITORID,DOCUMENTTYPEID) values ('Le Seigneur des Anneaux','Fantaisie','2','2','1','1');
-Insert into PROJET.DOCUMENT (TITLE,MAINTHEME,QUANTITY,DEPARTMENT,EDITORID,DOCUMENTTYPEID) values ('Algorithmic Beauty of Plants','Informatique','4','3','2','1');
-Insert into PROJET.DOCUMENT (TITLE,MAINTHEME,QUANTITY,DEPARTMENT,EDITORID,DOCUMENTTYPEID) values ('Toy Story 1','Dessin-Animé','0','5','2','2');
-Insert into PROJET.DOCUMENT (TITLE,MAINTHEME,QUANTITY,DEPARTMENT,EDITORID,DOCUMENTTYPEID) values ('Apocalypse 2nd Guerre  Mondial','Documentaire','2','5','2','2');
-Insert into PROJET.DOCUMENT (TITLE,MAINTHEME,QUANTITY,DEPARTMENT,EDITORID,DOCUMENTTYPEID) values ('Adibou The Movie','Educatif','4','6','2','3');
-Insert into PROJET.DOCUMENT (TITLE,MAINTHEME,QUANTITY,DEPARTMENT,EDITORID,DOCUMENTTYPEID) values ('The test project','Mathématiques','0','4','1','4');
+Insert into PROJET.DOCUMENT_BORROWER (DOCUMENTID,BORROWERID,DATESTART,DATERETURN) values ('5','16',to_date('15/11/18','DD/MM/RR'),to_date('15/11/19','DD/MM/RR'));
+Insert into PROJET.DOCUMENT_BORROWER (DOCUMENTID,BORROWERID,DATESTART,DATERETURN) values ('7','16',to_date('14/11/18','DD/MM/RR'),null);
+Insert into PROJET.DOCUMENT_BORROWER (DOCUMENTID,BORROWERID,DATESTART,DATERETURN) values ('2','16',to_date('16/11/19','DD/MM/RR'),null);
+Insert into PROJET.DOCUMENT_BORROWER (DOCUMENTID,BORROWERID,DATESTART,DATERETURN) values ('8','5',to_date('16/04/20','DD/MM/RR'),to_date('17/04/20','DD/MM/RR'));
+Insert into PROJET.DOCUMENT_BORROWER (DOCUMENTID,BORROWERID,DATESTART,DATERETURN) values ('6','2',to_date('22/04/19','DD/MM/RR'),to_date('22/04/20','DD/MM/RR'));
+Insert into PROJET.DOCUMENT_BORROWER (DOCUMENTID,BORROWERID,DATESTART,DATERETURN) values ('3','1',to_date('18/02/15','DD/MM/RR'),null);
+Insert into PROJET.DOCUMENT_BORROWER (DOCUMENTID,BORROWERID,DATESTART,DATERETURN) values ('9','6',to_date('03/07/19','DD/MM/RR'),null);
+Insert into PROJET.DOCUMENT_BORROWER (DOCUMENTID,BORROWERID,DATESTART,DATERETURN) values ('7','7',to_date('02/02/22','DD/MM/RR'),null);
