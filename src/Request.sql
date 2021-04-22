@@ -165,7 +165,7 @@ ID IN
 
 -- 16 Ã‰diteur dont le nombre de documents empruntÃ©s est le plus grand
 --, E."name" je ne sais pas pourquoi il ne veut pas marcher ici
-SELECT DISTINCT "EditorName", MAX("nbBorrow") -- TODO Sélectionner uniquement le max
+SELECT DISTINCT "EditorName", MAX("nbBorrow") -- TODO Sï¿½lectionner uniquement le max
 FROM
     (
         SELECT E."name" AS "EditorName", COUNT(dateStart) AS "nbBorrow"
@@ -177,5 +177,49 @@ FROM
 GROUP BY "EditorName"
 ;
 
---  Liste des documents n'ayant aucun 
+-- 17 Liste des documents n'ayant aucun 
 -- mot-clef en commun avec le document dont le titre est "SQL pour les nuls".
+SELECT title
+FROM Document
+WHERE
+ID NOT IN
+    (
+    SELECT D.ID
+    FROM Document D
+    JOIN Document_Keywords DK ON DK.DocumentID = D.ID
+    WHERE
+    DK.KeywordID IN
+       (
+            SELECT KeywordID
+            FROM Document_Keywords DK
+            JOIN Document D ON D.ID = DK.DocumentID
+            WHERE D.title = 'SQL pour les nuls'
+        )
+    )
+GROUP BY title;
+
+-- 18 Liste des documents ayant au moins un mot-clef
+-- en commun avec le document dont le titre est"SQL pour les nuls"
+SELECT D2.title
+FROM Document D1
+JOIN Document_Keywords DK1 ON DK1.DocumentID = D1.ID
+JOIN Document_Keywords DK2 ON DK1.KeywordID = DK2.KeywordID
+JOIN Document D2 ON D2.ID = DK2.DocumentID
+WHERE D1.title = 'SQL pour les nuls'
+GROUP BY D2.title;
+
+-- 19 Liste des documents ayant au moins 
+-- les mÃªmes mot-clef que le document dont le titre est "SQL pour les nuls".
+-- En faire des vues
+-- Cette requête permet d'avoir tous les mots clés qui ne sont pas les mots clés de SQL pour les nuls
+SELECT DK.KeywordID 
+FROM Document D
+JOIN Document_Keywords DK ON D.ID = DK.DocumentID
+MINUS
+SELECT KeywordID
+FROM Document_Keywords DK
+JOIN Document D ON D.ID = DK.DocumentID
+WHERE D.title = 'SQL pour les nuls'
+
+
+-- 20
