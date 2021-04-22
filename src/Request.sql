@@ -91,3 +91,91 @@ E.ID NOT IN
         GROUP BY E.ID
     )
 ;
+
+-- 11 Noms des personnes n'ayant jamais emprunté de documents
+SELECT name, firstname
+FROM Borrower
+WHERE
+ID NOT IN
+    (
+        SELECT BorrowerID
+        FROM Document_Borrower
+        GROUP BY BorrowerID
+    )
+;
+
+-- 12  Liste des documents n'ayant jamais été empruntés
+SELECT title
+FROM Document
+WHERE
+ID NOT IN
+    (
+        SELECT DocumentID
+        FROM Document_Borrower
+        GROUP BY DocumentID
+    )
+;
+
+-- 13  Donnez la liste des emprunteurs (nom, prénom) 
+-- appartenant à la catégorie desprofessionnels ayant emprunté 
+-- au moins une fois un dvd au cours des 6 derniers mois
+SELECT B.name, B.firstname
+FROM Borrower B
+JOIN BorrowerType BT        ON BT.ID = B.BorrowerTypeID
+JOIN Document_Borrower DB   ON DB.BorrowerID = B.ID
+JOIN Document D             ON D.ID = DB.DocumentID
+JOIN DocumentType DT        ON DT.ID = D.DocumentTypeID
+WHERE
+    BT.Borrower = 'Professionnel' AND
+    DT.name = 'DVD' AND
+    MONTHS_BETWEEN(DB.dateStart, SYSDATE) <= 6
+;
+
+-- 14 Liste des documents dont le nombre 
+-- d'exemplaires est supérieur au nombre moyen d'exemplaires
+SELECT title
+FROM Document,
+    (
+        SELECT AVG(quantity) AS "avg"
+        FROM Document
+    )
+WHERE quantity > "avg";
+
+
+-- 15  Noms des auteurs ayant écrit des documents d'informatique 
+-- et de mathématiques
+SELECT name
+FROM Author
+WHERE
+ID IN
+    (
+        SELECT AuthorID
+        FROM Document_Author DA
+        JOIN Document D ON D.ID = DA.DocumentID
+        WHERE D.mainTheme = 'Math�matiques'
+    ) AND
+ID IN
+    (
+        SELECT AuthorID
+        FROM Document_Author DA
+        JOIN Document D ON D.ID = DA.DocumentID
+        WHERE D.mainTheme = 'Informatique'
+    )
+;
+
+-- 16 Éditeur dont le nombre de documents empruntés est le plus grand
+--, E."name" je ne sais pas pourquoi il ne veut pas marcher ici
+SELECT DISTINCT "EditorName", MAX("nbBorrow") -- TODO S�lectionner uniquement le max
+FROM
+    (
+        SELECT E."name" AS "EditorName", COUNT(dateStart) AS "nbBorrow"
+        FROM Document_Borrower DB
+        JOIN Document D ON D.ID = DB.DocumentID
+        JOIN Editor E ON E.ID = D.EditorID
+        GROUP BY E."name"
+    )
+GROUP BY "EditorName"
+;
+
+--  Liste des documents n'ayant aucun 
+-- mot-clef en commun avec le document dont le titre est "SQL pour les nuls".

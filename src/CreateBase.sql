@@ -75,6 +75,23 @@ CREATE TABLE Video
     FOREIGN KEY (DocumentID) REFERENCES Document(ID)
 );
 
+-- MOTS CLES
+CREATE TABLE Keywords
+(
+    ID      INT PRIMARY KEY NOT NULL,
+    Word    VARCHAR(255)
+);
+
+CREATE TABLE Document_Keywords
+(
+    DocumentID  INT NOT NULL,
+    KeywordID   INT NOT NULL,
+
+    PRIMARY KEY (DocumentID, KeywordID),
+    FOREIGN KEY (DocumentID) REFERENCES Document(ID),
+    FOREIGN KEY (KeywordID) REFERENCES Keywords(ID)
+);
+
 -- AUTEUR.S DE DOCUMENTS
 CREATE TABLE Document_Author
 (
