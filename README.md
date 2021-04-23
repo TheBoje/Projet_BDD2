@@ -42,7 +42,7 @@ de prévention des verrous mortels.
 # 4. Vérification de la cohérence de la base
 
 
-# 5. Remplissage de la base de données multimédia.
+# 5. Remplissage de la base de données multimédia
 
 
 # 6. Interrogation de la base de données multimédia

@@ -127,7 +127,7 @@ JOIN Document D             ON D.ID = DB.DocumentID
 JOIN DocumentType DT        ON DT.ID = D.DocumentTypeID
 WHERE
     BT.Borrower = 'Professionnel' AND
-    DT.name = 'DVD' AND
+    DT.name = 'DVD'               AND
     MONTHS_BETWEEN(DB.dateStart, SYSDATE) <= 6
 ;
 
@@ -152,7 +152,7 @@ ID IN
         SELECT AuthorID
         FROM Document_Author DA
         JOIN Document D ON D.ID = DA.DocumentID
-        WHERE D.mainTheme = 'Mathématiques'
+        WHERE D.mainTheme = 'Mathï¿½matiques'
     ) AND
 ID IN
     (
@@ -171,23 +171,23 @@ FROM
         SELECT E."name" AS "EditorName", COUNT(dateStart) AS "nbBorrow"
         FROM Document_Borrower DB
         JOIN Document D ON D.ID = DB.DocumentID
-        JOIN Editor E ON E.ID = D.EditorID
+        JOIN Editor E   ON E.ID = D.EditorID
         GROUP BY E."name"
     )
 GROUP BY "EditorName"
 ;
 
--- On créer des vus pour rendre le tout un peu plus lisibles
+-- On crï¿½er des vus pour rendre le tout un peu plus lisibles
 -- ###### VUES #####
 
--- Vue contenant les mots clès de SQL pour les nuls
+-- Vue contenant les mots clï¿½s de SQL pour les nuls
 CREATE OR REPLACE VIEW sql_pour_les_nuls_keywords AS
 SELECT KeywordID, DocumentID
 FROM Document_Keywords DK
 JOIN Document D ON D.ID = DK.DocumentID
 WHERE D.title = 'SQL pour les nuls';
 
--- Vue contenant les id des documents ayant au moins un mot clé en commun avec SQL pour les nuls
+-- Vue contenant les id des documents ayant au moins un mot clï¿½ en commun avec SQL pour les nuls
 CREATE OR REPLACE VIEW docs_with_at_least_one_keyword_with_sql_pour_les_nuls AS
 SELECT D.ID, D.title
 FROM Document D
@@ -221,7 +221,7 @@ GROUP BY title;
 -- 19 Liste des documents ayant au moins 
 -- les mÃªmes mot-clef que le document dont le titre est "SQL pour les nuls".
 -- En faire des vues
--- Cette requête permet d'avoir tous les mots clés qui ne sont pas les mots clés de SQL pour les nuls
+-- Cette requï¿½te permet d'avoir tous les mots clï¿½s qui ne sont pas les mots clï¿½s de SQL pour les nuls
 SELECT COUNT(*)
 FROM Document D,
 (
@@ -253,4 +253,30 @@ SELECT KeywordID, DocumentID
 FROM sql_pour_les_nuls_keywords
 )
 ;
+
+SELECT *
+FROM Document_Keywords
+WHERE KeywordID = ANY (
+    SELECT KeywordID
+    FROM Document_Keywords
+    WHERE Document_Keywords.DocumentID = (...)
+)
+GROUP BY DocumentID;
+
+
+SELECT sub2.KeywordID
+FROM sql_pour_les_nuls_keywords
+WHERE sql_pour_les_nuls_keywords.KeywordID = ANY (
+    SELECT KeywordID
+    FROM (
+        SELECT DISTINCT DocumentID, KeywordID 
+        FROM Document_Keywords 
+    )
+) sub2;
+
+-- L'identifiant du document dont la liste des mots clÃ©s contient la liste des mots clÃ©s de sql
+SELECT 
+FROM 
+
+
 -- 20
