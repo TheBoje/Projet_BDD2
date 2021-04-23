@@ -152,7 +152,7 @@ ID IN
         SELECT AuthorID
         FROM Document_Author DA
         JOIN Document D ON D.ID = DA.DocumentID
-        WHERE D.mainTheme = 'Mathï¿½matiques'
+        WHERE D.mainTheme = 'Mathématiques'
     ) AND
 ID IN
     (
@@ -177,6 +177,30 @@ FROM
 GROUP BY "EditorName"
 ;
 
+-- On créer des vus pour rendre le tout un peu plus lisibles
+-- ###### VUES #####
+
+-- Vue contenant les mots clès de SQL pour les nuls
+CREATE OR REPLACE VIEW sql_pour_les_nuls_keywords AS
+SELECT KeywordID, DocumentID
+FROM Document_Keywords DK
+JOIN Document D ON D.ID = DK.DocumentID
+WHERE D.title = 'SQL pour les nuls';
+
+-- Vue contenant les id des documents ayant au moins un mot clé en commun avec SQL pour les nuls
+CREATE OR REPLACE VIEW docs_with_at_least_one_keyword_with_sql_pour_les_nuls AS
+SELECT D.ID, D.title
+FROM Document D
+JOIN Document_Keywords DK ON DK.DocumentID = D.ID
+WHERE
+DK.KeywordID IN 
+    (
+        SELECT * FROM sql_pour_les_nuls_keywords
+    ) 
+;
+
+-- ###### FIN VUES ######
+
 -- 17 Liste des documents n'ayant aucun 
 -- mot-clef en commun avec le document dont le titre est "SQL pour les nuls".
 SELECT title
@@ -184,42 +208,49 @@ FROM Document
 WHERE
 ID NOT IN
     (
-    SELECT D.ID
-    FROM Document D
-    JOIN Document_Keywords DK ON DK.DocumentID = D.ID
-    WHERE
-    DK.KeywordID IN
-       (
-            SELECT KeywordID
-            FROM Document_Keywords DK
-            JOIN Document D ON D.ID = DK.DocumentID
-            WHERE D.title = 'SQL pour les nuls'
-        )
+        SELECT ID FROM docs_with_at_least_one_keyword_with_sql_pour_les_nuls  
     )
 GROUP BY title;
 
 -- 18 Liste des documents ayant au moins un mot-clef
 -- en commun avec le document dont le titre est"SQL pour les nuls"
-SELECT D2.title
-FROM Document D1
-JOIN Document_Keywords DK1 ON DK1.DocumentID = D1.ID
-JOIN Document_Keywords DK2 ON DK1.KeywordID = DK2.KeywordID
-JOIN Document D2 ON D2.ID = DK2.DocumentID
-WHERE D1.title = 'SQL pour les nuls'
-GROUP BY D2.title;
+SELECT title 
+FROM docs_with_at_least_one_keyword_with_sql_pour_les_nuls
+GROUP BY title;
 
 -- 19 Liste des documents ayant au moins 
 -- les mÃªmes mot-clef que le document dont le titre est "SQL pour les nuls".
 -- En faire des vues
 -- Cette requête permet d'avoir tous les mots clés qui ne sont pas les mots clés de SQL pour les nuls
-SELECT DK.KeywordID 
-FROM Document D
-JOIN Document_Keywords DK ON D.ID = DK.DocumentID
-MINUS
-SELECT KeywordID
+SELECT COUNT(*)
+FROM Document D,
+(
+    SELECT COUNT(KeywordID)
+    FROM sql_pour_les_nuls_keywords
+    UNION ALL
+    SELECT KeywordID
+    FROM Document_Keywords DK
+    WHERE DK.DocumentID = 1
+) KWDS
+;
+
+SELECT KeywordID, DocumentID
 FROM Document_Keywords DK
-JOIN Document D ON D.ID = DK.DocumentID
-WHERE D.title = 'SQL pour les nuls'
+MINUS
+SELECT KeywordID, DocumentID
+FROM sql_pour_les_nuls_keywords
 
+;
 
+SELECT KeywordID, DocumentID
+FROM sql_pour_les_nuls_keywords
+INTERSECT
+(
+SELECT KeywordID, DocumentID
+FROM Document_Keywords DK
+MINUS
+SELECT KeywordID, DocumentID
+FROM sql_pour_les_nuls_keywords
+)
+;
 -- 20
