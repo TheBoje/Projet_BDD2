@@ -1,5 +1,5 @@
 -- 1 Liste par ordre alphabétique des titres de documents dont le thème comprend le motinformatique ou mathématiques
--- Ici on pourrait mettre un index par hachage sur le mainTheme �tant donn� une �galisation stricte
+-- Ici on pourrait mettre un index par hachage sur le mainTheme étant donne une égalisation stricte
 SELECT title 
 FROM Document 
 WHERE 
@@ -7,8 +7,8 @@ WHERE
     mainTheme = 'Math�matiques'
 ORDER BY title;
 
--- 2 Liste (titre et th�me) des documents emprunt�s par Dupont entre le 15/11/2018 et le 15/11/2019
--- Ici nous pourrions utiliser un Arbre-b sur la date �tant donn� les in�galit�s
+-- 2 Liste (titre et thème) des documents empruntés par Dupont entre le 15/11/2018 et le 15/11/2019
+-- Ici nous pourrions utiliser un Arbre-b sur la date étant donné les inégalités
 SELECT D.title, DB.dateStart
 FROM Document D
 JOIN Document_Borrower DB   ON DB.DocumentID = D.ID
@@ -20,7 +20,7 @@ WHERE
 ;
 
 -- 3 Pour chaque emprunteur, donner la liste des titres des documents qu'il a emprunt�s avec le nom des auteurs pour chaque document.
--- Ici on a pas besoin d'index, la question pourra se poser sur la m�thode de calcul de jointure utilis�e.
+-- Ici on a pas besoin d'index, la question pourra se poser sur la méthode de calcul de jointure utilisée.
 SELECT B.name, D.title, A.name
 FROM Borrower B
 JOIN Document_Borrower DB   ON DB.BorrowerID = B.ID
@@ -31,7 +31,7 @@ ORDER BY B.name
 ;
 
 -- 4 Noms des auteurs ayant écrit un livre édité chez Dunod
--- Ici nous pouvons utiliser le hachage sur le nom de  l'�diteur et sur le nom du type de document. Mais ici aussi, vu le nombre de jointures
+-- Ici nous pouvons utiliser le hachage sur le nom de  l'éditeur et sur le nom du type de document. Mais ici aussi, vu le nombre de jointures
 -- on peut se concentrer sur le calcul de la jointure.
 -- On peut aussi utiliser un index bitmap car DT.name est un domaine restreint (ici 4 valeurs seulement)
 SELECT D.title, E."name"
@@ -46,7 +46,7 @@ WHERE
 ;
 
 -- 5 Quantité totale des exemplaires édités chez Eyrolles ?
--- Ici on peut utiliser un hachage sur le nom de l'�diteur gr�ce � une �galit� stricte
+-- Ici on peut utiliser un hachage sur le nom de l'éditeur grâce à une égalité stricte
 SELECT SUM(quantite)
 FROM Document D
 JOIN Editor E   ON E.ID = D.EditorID
@@ -74,7 +74,7 @@ FROM
         SELECT E."name" AS "nameEditor", COUNT(D.title) AS "nbInfoMaths"
         FROM Document D
         JOIN Editor E ON E.ID = D.EditorID
-        WHERE D.mainTheme = 'Informatique' OR D.mainTheme = 'Math�matiques'
+        WHERE D.mainTheme = 'Informatique' OR D.mainTheme = 'Mathématiques'
         GROUP BY E."name"
     )
 WHERE "nbInfoMaths" >= 2;
@@ -89,7 +89,7 @@ GROUP BY B2.name, B2.firstname
 ;
 
 -- 10 Liste des éditeurs n'ayant pas édité de documents d'informatique
--- Ici on peut mettre un index de hachage sur le mainTheme du Document gr�ce � l'�galit� stricte
+-- Ici on peut mettre un index de hachage sur le mainTheme du Document grâce à l'égalite stricte
 SELECT E."name"
 FROM Editor E
 WHERE 
@@ -147,7 +147,7 @@ WHERE
 
 -- 14 Liste des documents dont le nombre 
 -- d'exemplaires est supérieur au nombre moyen d'exemplaires
--- Ici nous pouvons mettre un index Arbre-b sur la quantit�
+-- Ici nous pouvons mettre un index Arbre-b sur la quantité
 SELECT title
 FROM Document,
     (
@@ -159,7 +159,7 @@ WHERE quantity > "avg";
 
 -- 15  Noms des auteurs ayant écrit des documents d'informatique 
 -- et de mathématiques
--- Ici nous pouvons mettre un index de hachage sur mainTheme via les �galit�s strictes
+-- Ici nous pouvons mettre un index de hachage sur mainTheme via les égalités strictes
 SELECT name
 FROM Author
 WHERE
@@ -168,7 +168,7 @@ ID IN
         SELECT AuthorID
         FROM Document_Author DA
         JOIN Document D ON D.ID = DA.DocumentID
-        WHERE D.mainTheme = 'Math�matiques'
+        WHERE D.mainTheme = 'Mathématiques'
     ) AND
 ID IN
     (
@@ -180,7 +180,7 @@ ID IN
 ;
 
 -- 16 Éditeur dont le nombre de documents empruntés est le plus grand
--- Ici on peut se concentrer sur le calcul de la jointure plut�t que sur un index
+-- Ici on peut se concentrer sur le calcul de la jointure plutôt que sur un index
 SELECT DISTINCT "EditorName", MAX("nbBorrow")
 FROM
     (
@@ -193,11 +193,11 @@ FROM
 GROUP BY "EditorName"
 ;
 
--- On cr�er des vus pour rendre le tout un peu plus lisibles
+-- On créer des vus pour rendre le tout un peu plus lisibles
 -- ###### VUES #####
 
--- Vue contenant les mots cl�s de SQL pour les nuls
--- Ici on peut utiliser un index de hachage via l'�galit� stricte
+-- Vue contenant les mots clés de SQL pour les nuls
+-- Ici on peut utiliser un index de hachage via l'égalité stricte
 CREATE OR REPLACE VIEW sql_pour_les_nuls_keywords AS
 SELECT KeywordID, DocumentID
 FROM Document_Keywords DK
@@ -231,7 +231,7 @@ GROUP BY D.title;
 -- 19 Liste des documents ayant au moins 
 -- les mêmes mot-clef que le document dont le titre est "SQL pour les nuls".
 -- En faire des vues
--- Cette requ�te permet d'avoir tous les mots cl�s qui ne sont pas les mots cl�s de SQL pour les nuls
+-- Cette requête permet d'avoir tous les mots clés qui ne sont pas les mots clés de SQL pour les nuls
 
 SELECT KeywordID, D1.ID DOC_ID, D1.Title
 FROM Document_Keywords DK1
@@ -248,4 +248,5 @@ WHERE exists
      );
 
 
--- 20
+-- 20 Liste des documents ayant exactement les mêmes mot-clef que le document
+-- dont le titre est "SQL pour les nuls"
