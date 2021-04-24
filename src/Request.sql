@@ -222,17 +222,9 @@ GROUP BY title;
 -- les mêmes mot-clef que le document dont le titre est "SQL pour les nuls".
 -- En faire des vues
 -- Cette requ�te permet d'avoir tous les mots cl�s qui ne sont pas les mots cl�s de SQL pour les nuls
-SELECT COUNT(*)
-FROM Document D,
-(
-    SELECT COUNT(KeywordID)
-    FROM sql_pour_les_nuls_keywords
-    UNION ALL
-    SELECT KeywordID
-    FROM Document_Keywords DK
-    WHERE DK.DocumentID = 1
-) KWDS
-;
+SELECT *
+FROM Document_Keywords
+HAVING EVERY (sql_pour_les_nuls_keywords);
 
 SELECT KeywordID, DocumentID
 FROM Document_Keywords DK
