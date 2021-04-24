@@ -252,4 +252,19 @@ where
 
 -- 20 Liste des documents ayant exactement 
 -- les m�mes mot-clef que le document dont le titre est "SQL pour les nuls".
-
+with document_keywords_agg(documentid, title, keywordlist, keywordids) as (
+    select d.id, d.title
+         , listagg(dk.keywordid, ', ') within group (order by dk.keywordid)
+         , cast(collect(dk.keywordid) as number_tt)
+    from   Document d
+           join document_keywords dk on dk.documentid = d.id
+    group by d.id, d.title
+  )
+select dk1.title
+from   document_keywords_agg dk1
+       join document_keywords_agg dk2
+            on dk2.keywordids = dk1.keywordids
+where  
+    dk2.documentid <> dk1.documentid AND
+    dk2.title = 'SQL pour les nuls'
+;
