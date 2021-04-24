@@ -39,7 +39,7 @@ WHERE
     DT.name = 'Book'
 ;
 
--- 5 Quantité totale des exemplaires édités chez Eyrolles /!\ exemplaires ?
+-- 5 Quantité totale des exemplaires édités chez Eyrolles
 SELECT SUM(quantite)
 FROM Document D
 JOIN Editor E   ON E.ID = D.EditorID
@@ -165,7 +165,7 @@ ID IN
 
 -- 16 Éditeur dont le nombre de documents empruntés est le plus grand
 --, E."name" je ne sais pas pourquoi il ne veut pas marcher ici
-SELECT DISTINCT "EditorName", MAX("nbBorrow") -- TODO S�lectionner uniquement le max
+SELECT DISTINCT "EditorName", MAX("nbBorrow") -- TODO Sélectionner uniquement le max
 FROM
     (
         SELECT E."name" AS "EditorName", COUNT(dateStart) AS "nbBorrow"
