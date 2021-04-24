@@ -1,12 +1,14 @@
 -- 1 Liste par ordre alphabÃ©tique des titres de documents dont le thÃ¨me comprend le motinformatique ou mathÃ©matiques
+-- Ici on pourrait mettre un index par hachage sur le mainTheme étant donné une égalisation stricte
 SELECT title 
 FROM Document 
 WHERE 
     mainTheme = 'Informatique' OR 
-    mainTheme = 'Mathï¿½matiques'
+    mainTheme = 'Mathématiques'
 ORDER BY title;
 
--- 2 Liste (titre et thÃ¨me) des documents empruntÃ©s par Dupont entre le 15/11/2018 et le 15/11/2019
+-- 2 Liste (titre et thème) des documents empruntés par Dupont entre le 15/11/2018 et le 15/11/2019
+-- Ici nous pourrions utiliser un Arbre-b sur la date étant donné les inégalités
 SELECT D.title, DB.dateStart
 FROM Document D
 JOIN Document_Borrower DB   ON DB.DocumentID = D.ID
@@ -17,7 +19,8 @@ WHERE
     TO_DATE(DB.dateStart, 'DD/MM/YY') <= TO_DATE('15/11/19', 'DD/MM/YY')
 ;
 
--- 3 Pour chaque emprunteur, donner la liste des titres des documents qu'il a empruntÃ©s avec le nom des auteurs pour chaque document.
+-- 3 Pour chaque emprunteur, donner la liste des titres des documents qu'il a empruntés avec le nom des auteurs pour chaque document.
+-- Ici on a pas besoin d'index, la question pourra se poser sur la méthode de calcul de jointure utilisée.
 SELECT B.name, D.title, A.name
 FROM Borrower B
 JOIN Document_Borrower DB   ON DB.BorrowerID = B.ID
@@ -28,6 +31,9 @@ ORDER BY B.name
 ;
 
 -- 4 Noms des auteurs ayant Ã©crit un livre Ã©ditÃ© chez Dunod
+-- Ici nous pouvons utiliser le hachage sur le nom de  l'éditeur et sur le nom du type de document. Mais ici aussi, vu le nombre de jointures
+-- on peut se concentrer sur le calcul de la jointure.
+-- On peut aussi utiliser un index bitmap car DT.name est un domaine restreint (ici 4 valeurs seulement)
 SELECT D.title, E."name"
 FROM Document D
 JOIN Editor E           ON E.ID = D.EditorID
@@ -39,46 +45,51 @@ WHERE
     DT.name = 'Book'
 ;
 
--- 5 QuantitÃ© totale des exemplaires Ã©ditÃ©s chez Eyrolles /!\ exemplaires ?
+-- 5 QuantitÃ© totale des exemplaires Ã©ditÃ©s chez Eyrolles ?
+-- Ici on peut utiliser un hachage sur le nom de l'éditeur grâce à une égalité stricte
 SELECT SUM(quantite)
 FROM Document D
 JOIN Editor E   ON E.ID = D.EditorID
 WHERE E."name" = 'Eyrolles';
 
 -- 6 Pour chaque Ã©diteur, nombre de documents prÃ©sents Ã  la bibliothÃ¨que
+-- Ici nous n'avons pas besoin d'index
 SELECT E."name", COUNT(D.title) AS "Nb docs"
 FROM Document D
 JOIN Editor E ON E.ID = D.EditorID
 GROUP BY E."name";
 
 -- 7 Pour chaque document, nombre de fois oÃ¹ il a Ã©tÃ© empruntÃ©
+-- On n'a pas besoin d'utiliser d'index ici.
 SELECT D.title, COUNT(DB.DocumentID) AS "Nb borrowing"
 FROM Document D
 JOIN Document_Borrower DB ON DB.DocumentID = D.ID
 GROUP BY D.title;
 
 -- 8 Liste des Ã©diteurs ayant Ã©ditÃ© plus de deux documents d'informatique ou de mathÃ©matiques
+-- On peut ici utiliser un hachage sur le mainTheme.
 SELECT "nameEditor"
 FROM
     (
         SELECT E."name" AS "nameEditor", COUNT(D.title) AS "nbInfoMaths"
         FROM Document D
         JOIN Editor E ON E.ID = D.EditorID
-        WHERE D.mainTheme = 'Informatique' OR D.mainTheme = 'Mathï¿½matiques'
+        WHERE D.mainTheme = 'Informatique' OR D.mainTheme = 'Mathématiques'
         GROUP BY E."name"
     )
 WHERE "nbInfoMaths" >= 2;
 
 -- 9 Noms des emprunteurs habitant la mÃªme adresse que Dupont
+-- Ici on peut mettre un index de hachage sur le nom de l'emprunteur
 SELECT B2.name, B2.firstname
-FROM Borrower B1, Borrower B2
-WHERE
-    B1.name = 'Dupont' AND
-    B1.adress = B2.adress
+FROM Borrower B1
+JOIN Borrower B2 ON B1.adress = B2.adress
+WHERE B1.name = 'Dupont'
 GROUP BY B2.name, B2.firstname
 ;
 
 -- 10 Liste des Ã©diteurs n'ayant pas Ã©ditÃ© de documents d'informatique
+-- Ici on peut mettre un index de hachage sur le mainTheme du Document grâce à l'égalité stricte
 SELECT E."name"
 FROM Editor E
 WHERE 
@@ -93,6 +104,7 @@ E.ID NOT IN
 ;
 
 -- 11 Noms des personnes n'ayant jamais empruntÃ© de documents
+-- Ici nous n'avons pas besoin d'index
 SELECT name, firstname
 FROM Borrower
 WHERE
@@ -105,6 +117,7 @@ ID NOT IN
 ;
 
 -- 12  Liste des documents n'ayant jamais Ã©tÃ© empruntÃ©s
+-- Ici nous n'avons pas besoin d'index
 SELECT title
 FROM Document
 WHERE
@@ -119,6 +132,7 @@ ID NOT IN
 -- 13  Donnez la liste des emprunteurs (nom, prÃ©nom) 
 -- appartenant Ã  la catÃ©gorie desprofessionnels ayant empruntÃ© 
 -- au moins une fois un dvd au cours des 6 derniers mois
+-- Ici nous pouvons mettre un index Arbre-b sur le nombre de mois.
 SELECT B.name, B.firstname
 FROM Borrower B
 JOIN BorrowerType BT        ON BT.ID = B.BorrowerTypeID
@@ -133,6 +147,7 @@ WHERE
 
 -- 14 Liste des documents dont le nombre 
 -- d'exemplaires est supÃ©rieur au nombre moyen d'exemplaires
+-- Ici nous pouvons mettre un index Arbre-b sur la quantité
 SELECT title
 FROM Document,
     (
@@ -144,6 +159,7 @@ WHERE quantity > "avg";
 
 -- 15  Noms des auteurs ayant Ã©crit des documents d'informatique 
 -- et de mathÃ©matiques
+-- Ici nous pouvons mettre un index de hachage sur mainTheme via les égalités strictes
 SELECT name
 FROM Author
 WHERE
@@ -152,7 +168,7 @@ ID IN
         SELECT AuthorID
         FROM Document_Author DA
         JOIN Document D ON D.ID = DA.DocumentID
-        WHERE D.mainTheme = 'Mathï¿½matiques'
+        WHERE D.mainTheme = 'Mathématiques'
     ) AND
 ID IN
     (
@@ -164,8 +180,8 @@ ID IN
 ;
 
 -- 16 Ã‰diteur dont le nombre de documents empruntÃ©s est le plus grand
---, E."name" je ne sais pas pourquoi il ne veut pas marcher ici
-SELECT DISTINCT "EditorName", MAX("nbBorrow") -- TODO Sï¿½lectionner uniquement le max
+-- Ici on peut se concentrer sur le calcul de la jointure plutôt que sur un index
+SELECT DISTINCT "EditorName", MAX("nbBorrow")
 FROM
     (
         SELECT E."name" AS "EditorName", COUNT(dateStart) AS "nbBorrow"
@@ -181,23 +197,12 @@ GROUP BY "EditorName"
 -- ###### VUES #####
 
 -- Vue contenant les mots clï¿½s de SQL pour les nuls
+-- Ici on peut utiliser un index de hachage via l'égalité stricte
 CREATE OR REPLACE VIEW sql_pour_les_nuls_keywords AS
 SELECT KeywordID, DocumentID
 FROM Document_Keywords DK
 JOIN Document D ON D.ID = DK.DocumentID
 WHERE D.title = 'SQL pour les nuls';
-
--- Vue contenant les id des documents ayant au moins un mot clï¿½ en commun avec SQL pour les nuls
-CREATE OR REPLACE VIEW docs_with_at_least_one_keyword_with_sql_pour_les_nuls AS
-SELECT D.ID, D.title
-FROM Document D
-JOIN Document_Keywords DK ON DK.DocumentID = D.ID
-WHERE
-DK.KeywordID IN 
-    (
-        SELECT * FROM sql_pour_les_nuls_keywords
-    ) 
-;
 
 -- ###### FIN VUES ######
 
@@ -214,61 +219,33 @@ GROUP BY title;
 
 -- 18 Liste des documents ayant au moins un mot-clef
 -- en commun avec le document dont le titre est"SQL pour les nuls"
-SELECT title 
-FROM docs_with_at_least_one_keyword_with_sql_pour_les_nuls
-GROUP BY title;
+Select D.Title
+From Document_Keywords A 
+Inner Join sql_pour_les_nuls_keywords B 
+    On A.KeywordID = B.KeywordID
+    And A.DocumentID <> B.DocumentID
+Inner Join Document D on D.ID = A.DocumentID
+GROUP BY D.title;
+
 
 -- 19 Liste des documents ayant au moins 
 -- les mÃªmes mot-clef que le document dont le titre est "SQL pour les nuls".
 -- En faire des vues
 -- Cette requï¿½te permet d'avoir tous les mots clï¿½s qui ne sont pas les mots clï¿½s de SQL pour les nuls
-SELECT *
-FROM Document_Keywords
-HAVING EVERY (sql_pour_les_nuls_keywords);
 
-SELECT KeywordID, DocumentID
-FROM Document_Keywords DK
-MINUS
-SELECT KeywordID, DocumentID
-FROM sql_pour_les_nuls_keywords
-
-;
-
-SELECT KeywordID, DocumentID
-FROM sql_pour_les_nuls_keywords
-INTERSECT
-(
-SELECT KeywordID, DocumentID
-FROM Document_Keywords DK
-MINUS
-SELECT KeywordID, DocumentID
-FROM sql_pour_les_nuls_keywords
-)
-;
-
-SELECT *
-FROM Document_Keywords
-WHERE KeywordID = ANY (
-    SELECT KeywordID
-    FROM Document_Keywords
-    WHERE Document_Keywords.DocumentID = (...)
-)
-GROUP BY DocumentID;
-
-
-SELECT sub2.KeywordID
-FROM sql_pour_les_nuls_keywords
-WHERE sql_pour_les_nuls_keywords.KeywordID = ANY (
-    SELECT KeywordID
-    FROM (
-        SELECT DISTINCT DocumentID, KeywordID 
-        FROM Document_Keywords 
-    )
-) sub2;
-
--- L'identifiant du document dont la liste des mots clÃ©s contient la liste des mots clÃ©s de sql
-SELECT 
-FROM 
+SELECT KeywordID, D1.ID DOC_ID, D1.Title
+FROM Document_Keywords DK1
+     JOIN Document D1
+        on DK1.DocumentID = D1.ID
+WHERE exists
+   (select 1
+    from Document D2
+    join Document_Keywords DK2
+        on D2.ID = DK2.DocumentID
+    where  D2.title = 'SQL pour les nuls'
+     and DK1.KeywordID=DK2.KeywordID
+     and D1.ID!= D2.ID
+     );
 
 
 -- 20
