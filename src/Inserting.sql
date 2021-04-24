@@ -4,7 +4,7 @@ Insert into PROJET.BORROWERTYPE (BORROWER,NBBORROWMAX) values ('Professionnel','
 Insert into PROJET.BORROWERTYPE (BORROWER,NBBORROWMAX) values ('Public','3');
 
 -- Ajout type de document
-Insert into PROJET.DOCUMENTTYPE (NAME) values ('Book');
+Insert into PROJET.DOCUMENTTYPE (NAME) values ('Livre');
 Insert into PROJET.DOCUMENTTYPE (NAME) values ('DVD');
 Insert into PROJET.DOCUMENTTYPE (NAME) values ('CD');
 Insert into PROJET.DOCUMENTTYPE (NAME) values ('Video');
