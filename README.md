@@ -224,7 +224,16 @@ ID IN
 
 ## 16) Éditeur dont le nombre de documents empruntés est le plus grand
 ```sql
-TODO
+SELECT DISTINCT "EditorName", MAX("nbBorrow")
+FROM
+    (
+        SELECT E."name" AS "EditorName", COUNT(dateStart) AS "nbBorrow"
+        FROM Document_Borrower DB
+        JOIN Document D ON D.ID = DB.DocumentID
+        JOIN Editor E   ON E.ID = D.EditorID
+        GROUP BY E."name"
+    )
+GROUP BY "EditorName";
 ```
 
 ## 17) Liste des documents n'ayant aucun mot cléf en commun avec le document dont le titre est "SQL pour les nuls"
@@ -311,7 +320,6 @@ Ici nous pouvons mettre un index de hachage sur `Document.mainTheme` via les ég
 ## 16) Éditeur dont le nombre de documents empruntés est le plus grand
 Ici on peut se concentrer sur le calcul de la jointure plutôt que sur un index.
 ## 17) Liste des documents n'ayant aucun mot cléf en commun avec le document dont le titre est "SQL pour les nuls"
-TODO
 ### Vue sql_pour_les_nuls_keywords
 Ici on peut utiliser un index de hachage via l'égalité stricte.
 ## 18) Liste des documents ayant au moins un mot-clef en commun avec le document dont le titre est "SQL pour les nuls"
