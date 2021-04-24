@@ -230,22 +230,26 @@ GROUP BY D.title;
 
 -- 19 Liste des documents ayant au moins 
 -- les mÃªmes mot-clef que le document dont le titre est "SQL pour les nuls".
--- En faire des vues
--- Cette requï¿½te permet d'avoir tous les mots clï¿½s qui ne sont pas les mots clï¿½s de SQL pour les nuls
+-- Requête venant en grande partie de M. William Robertson de StackOverflow qui nous a aidé pour cette question.
+create or replace type number_tt as table of number;
 
-SELECT KeywordID, D1.ID DOC_ID, D1.Title
-FROM Document_Keywords DK1
-     JOIN Document D1
-        on DK1.DocumentID = D1.ID
-WHERE exists
-   (select 1
-    from Document D2
-    join Document_Keywords DK2
-        on D2.ID = DK2.DocumentID
-    where  D2.title = 'SQL pour les nuls'
-     and DK1.KeywordID=DK2.KeywordID
-     and D1.ID!= D2.ID
-     );
+with document_keywords_agg(documentid, title, keywordlist, keywordids) as (
+    select d.id, d.title
+         , listagg(dk.keywordid, ', ') within group (order by dk.keywordid)
+         , cast(collect(dk.keywordid) as number_tt)
+    from   Document d
+           join document_keywords dk on dk.documentid = d.id
+    group by d.id, d.title
+  )
+select dk1.title
+from   document_keywords_agg dk1
+       join document_keywords_agg dk2
+            on dk2.keywordids submultiset of dk1.keywordids
+where  
+    dk2.documentid <> dk1.documentid AND
+    dk2.title = 'SQL pour les nuls'
+;
 
+-- 20 Liste des documents ayant exactement 
+-- les mêmes mot-clef que le document dont le titre est "SQL pour les nuls".
 
--- 20
