@@ -30,11 +30,17 @@ CREATE OR REPLACE TRIGGER TRIGGER2
 BEFORE INSERT ON DOCUMENT_BORROWER 
 BEGIN
 
-IF EXISTS(SELECT D.title, DB.dateStart
+CREATE LOCAL TEMPORARY VIEW tempo AS 
+SELECT D.Quantity
 FROM Document D
-JOIN Document_Borrower DB ON DB.DocumentID = D.ID
-WHERE D.QUANTITY > 0 AND D.ID = :NEW.DOCUEMENTID)
-THEN raise_application_error('-20001', 'Document Already Borrowed') ;
+JOIN Document_Borrower DB  ON DB.DocumentID = D.ID
+WHERE D.ID = NEW.DOCUEMENTID
+
+if (COUNT(SELECT DB.DocumentID
+FROM Document_Borrower DB
+join Document D on DB.DocumentID = D.ID
+Where (DB.DocumentID=NEW.DocumentID  and (DB.dateReturn IS NULL) and D.QUANTITY > 0))> tempo.quantity)
+THEN raise_application_error('-20001', 'All Document Already Borrowed') ;
 END IF;
 END;
 /
@@ -109,11 +115,11 @@ BEFORE INSERT ON DOCUMENT
 BEGIN
 
 if EXIST (
-SELECT DB.DocumentID,DB.BorrowerID
+SELECT DT.DocumentID,DT.BorrowerID
 FROM NEW
-join BorrowerType BT on BT.ID= NEW.DocumentTypeID
-Where (BT.name = 'book')
+join DocumentType DT on DT.ID= NEW.DocumentTypeID
+Where (DT.name = 'book')
 )
-then raise_application_error('-20001', 'Document(s) en retard !') ;
+then insert into  Book ( DocumentID , nbPages ) values (New.ID, 0);
 end if;
 END;

@@ -27,6 +27,50 @@ TODO : Réaliser la base via Visual paradigm a partir du MCD
 
 # 4. Vérification de la cohérence de la base
 
+&nbsp;Pour la cohérence de la base de donnée nous nous somme centrée autour de plusieurs points : 
+- Verification lors de l'ajout d'un emprunt si les exemplaires ne sont pas tous  deja emprunter
+- Que le nombre d'emprunt maximal d'une personne suivant sa categorie et la categorie du document n'est pas deja atteinte lors d'un nouvelle emprunt
+- Qu'un document ne peut pas étre emprunter si le demandeur de l'emprunt na pas rendu un document a temps.
+- lors de l'ajout d'un document on doit verifier de quel type il est est l'ajouter dans la table du type correspondant
+
+Malheuresement nous avons quelque soucis avec la syntaxe sql nous empechant de faire des triggers fonctionnel mais nous avons pour chacun un pseudo codes.
+
+-Pour la verification si un document est deja emprunter :
+
+ a chaque ajout sur Document_borrower
+ on va faire un join entre Document et Document_borrower avec un where 
+ ou l'id du document vaux l'id du document que l'on shouaite emprunter ,que le retour ne soit pas encore fait (donc null) et enfin que la quantités du document ne soit pas a 0. 
+ Ensuite on va compter le nombre de document que le join a trouver et le comparer avec la quantité du document que l'on shouaite emprunter.
+ Si cette dernier est inferieure a celle trouver sur le join alors cela signifique que tout les documents sont emprunter.
+
+
+-Pour le nombre maximal d'emprunt suivant une type de document et le type de personne qui l'emprinte :
+
+ Dans un premier temps il nous faut recuperer quel categorie de personne l'emprunteur se trouve pour cela on va faire un join entre l'id de l'empriteur de la table Document_Borrower et Borrower avec un where nous donnant l'id rechercher grace a l'insertion.nous permetant de recuper l'id de la categorie du Borrower.
+ Dans un second temps nous allons faire a peut pres le meme systeme pour recupérer l'idtype du document en fesant un join entre la table Document_borrower et Document nous donnant le documentTypeID 
+ ensuite nous allons compter combien de document de ce type il posséde pour cela on utilise la COUNT sur un join sur Docuement borrower et Document avec les document ID comme liens avec un where ou DocuemenTypeID est egal a celuti trouver juste avant. 
+
+ Avec ces informations nous avons plus que a chercher une correspondance dans la table BorrowerYpe_DocuementType et on obtient du coup le nombre d'imprunt max on compare ce nombre avec le nombre d'emprunt que l'on a calculer plus haut. si ce chiffre est superieur ou egale alors on resort une erreur.
+
+ 
+-Pour la verification si l'emprunteur a un retard sur l'une de ses requete :
+
+ Dans un premier temps on va recuperer le tmeps maximal pour l'emprint nous allons donc refaire la meme choses que pour le triger precedent recuperer quel categorie de personne l'emprunteur se trouve pour cela on va faire un join entre l'id de l'empriteur de la table Document_Borrower et Borrower avec un where nous donnant l'id rechercher grace a l'insertion.nous permetant de recuper l'id de la categorie du Borrower.
+ Dans un second temps nous allons faire a peut pres le meme systeme pour recupérer l'idtype du document en fesant un join entre la table Document_borrower et Document nous donnant le documentTypeID 
+ ensuite avec ses infos on va chercher une correspondance dans la table BorrowerYpe_DocuementType et on obtient du coup le temps max d'emprunt .
+
+ enfin on va faire un test not is null sur un select de la table borrower avec un where qui selectione l'id du borrower qui fait l'insertion et qui chercher une date_return>(date_start +temps_max ) .
+ si la table est vide on fait l'insertion sinon on renvoie une erreur.
+
+ 
+ -Pour ce qui est de l'ajout d'un document suivat son type lorsque que l'on ajoute un document:
+
+il faut tout d'abord faire un join entre la table DoCument type et l'insertion  sur leur id avec un where ou docuementtype.name testeras un type de document.
+nous n'aurront plus que a faire ensuite un test Exist sur ce join et si ce test est vrai alors on feras une insertion sur la talbe qui seras tester avec l'id de l'insertion faite sur docuement.
+
+
+
+
 
 # 5. Remplissage de la base de données multimédia
 &nbsp;Le remplissage de notre base de données est assuré par le fichier `src/Inserting.sql`, dans lequel on ajoute :
