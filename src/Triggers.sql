@@ -1,19 +1,46 @@
+-- Vérification que l'emprunteur ne dépasse pas son nombre d'emprunt max
+DROP TRIGGER TRIGGER1;
+CREATE OR REPLACE TRIGGER TRIGGER1
+    BEFORE INSERT 
+    ON Document_Borrower 
+    FOR EACH ROW
+DECLARE
+    max_borrow      INT;
+    current_borrow  INT;
+BEGIN
+    SELECT BT.nbBorrowMax, B.nbBorrow
+    INTO max_borrow, current_borrow
+    FROM BorrowerType BT, Borrower B
+    WHERE :NEW.BorrowerID = B.ID 
+      AND B.BorrowerTypeID = BT.ID;
+
+    IF (current_borrow + 1 > max_borrow)
+    THEN RAISE_APPLICATION_ERROR('-20001', 'Document already borrowed');
+    ELSE
+        UPDATE Borrower B
+        SET current_borrow = current_borrow + 1 
+        WHERE :NEW.BorrowerID = B.ID;
+    END IF;
+END;
+/
+
 -- test si un document est pas deja emprunter
+DROP TRIGGER TRIGGER2;
 CREATE OR REPLACE TRIGGER TRIGGER2 
 BEFORE INSERT ON DOCUMENT_BORROWER 
 BEGIN
 
-if EXISTS(SELECT D.title, DB.dateStart
+IF EXISTS(SELECT D.title, DB.dateStart
 FROM Document D
-JOIN Document_Borrower DB  ON DB.DocumentID = D.ID
-WHERE D.QUANTITY >0 and D.ID =NEW.DOCUEMENTID)
-then raise_application_error('-20001', 'Document Already Borrowed') ;
-end if;
+JOIN Document_Borrower DB ON DB.DocumentID = D.ID
+WHERE D.QUANTITY > 0 AND D.ID = :NEW.DOCUEMENTID)
+THEN raise_application_error('-20001', 'Document Already Borrowed') ;
+END IF;
 END;
-
+/
 --test si le nombre d'emprunt pour cet categorie de document 
-
-CREATE OR REPLACE TRIGGER Trigger3  
+DROP TRIGGER TRIGGER3;
+CREATE OR REPLACE TRIGGER TRIGGER3
 BEFORE INSERT ON DOCUMENT_BORROWER 
 BEGIN
 
@@ -21,7 +48,7 @@ CREATE OR REPLACE LOCAL TEMPORARY VIEW tempiddoc1 AS
 SELECT D.DOCUMENTTYPEID
 FROM Document D
 JOIN Document_Borrower DB  ON DB.DocumentID = D.ID
-WHERE D.ID =NEW.DOCUEMENTID
+WHERE D.ID = NEW.DOCUEMENTID
 
 CREATE OR REPLACE LOCAL TEMPORARY VIEW tempiddoc2 AS 
 SELECT DT.ID 
@@ -32,7 +59,7 @@ CREATE OR REPLACE LOCAL TEMPORARY VIEW tempidborrow1 AS
 SELECT B.BORROWERTYPEID
 FROM Borrower B
 JOIN Document_Borrower DB  ON DB.DocumentID = B.ID
-WHERE  B.ID =NEW.DOCUEMENTID
+WHERE B.ID = NEW.DOCUEMENTID
 
 
 CREATE OR REPLACE LOCAL TEMPORARY VIEW tempidborrow2 AS 
@@ -62,21 +89,21 @@ end if;
 END;
 
 --verifications si l'emprunteur n'est pas en retard
-
-CREATE OR REPLACE TRIGGER TRIGGER4 
+DROP TRIGGER TRIGGER4;
+CREATE OR REPLACE TRIGGER TRIGGER4
 BEFORE INSERT ON DOCUMENT_BORROWER 
 BEGIN
 
-if EXIST (SELECT DB.DocumentID,DB.BorrowerID
+if EXIST (SELECT DB.DocumentID, DB.BorrowerID
 FROM Document_Borrower DB
-Where ( DB.BorrowerID = NEW.BorrowerID and (DB.dateReturn> sysdate )))
+Where ( DB.BorrowerID = NEW.BorrowerID and (DB.dateReturn > sysdate )))
 then  raise_application_error('-20001', 'Document(s) en retard !') ;
 end if;
 END;
 
 
 --verification du type d'un document (book)
-
+DROP TRIGGER TRIGGER5;
 CREATE OR REPLACE TRIGGER TRIGGER5 
 BEFORE INSERT ON DOCUMENT
 BEGIN
@@ -87,6 +114,6 @@ FROM NEW
 join BorrowerType BT on BT.ID= NEW.DocumentTypeID
 Where (BT.name = 'book')
 )
-then  raise_application_error('-20001', 'Document(s) en retard !') ;
+then raise_application_error('-20001', 'Document(s) en retard !') ;
 end if;
 END;

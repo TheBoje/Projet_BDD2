@@ -1,8 +1,8 @@
 -- Ajout types d'emprunteurs
-Insert into PROJET.BORROWERTYPE (BORROWER,NBBORROWMAX) values ('Personnel','10');
-Insert into PROJET.BORROWERTYPE (BORROWER,NBBORROWMAX) values ('Professionnel','5');
-Insert into PROJET.BORROWERTYPE (BORROWER,NBBORROWMAX) values ('Public','3');
-
+Insert into PROJET.BORROWERTYPE (ID, BORROWER, NBBORROWMAX) values ('1','Personnel','10');
+Insert into PROJET.BORROWERTYPE (ID, BORROWER, NBBORROWMAX) values ('2','Professionnel','5');
+Insert into PROJET.BORROWERTYPE (ID, BORROWER, NBBORROWMAX) values ('3','Public','3');
+Commit;
 -- Ajout type de document
 Insert into PROJET.DOCUMENTTYPE (NAME) values ('Livre');
 Insert into PROJET.DOCUMENTTYPE (NAME) values ('DVD');

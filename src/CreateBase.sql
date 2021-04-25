@@ -129,6 +129,7 @@ CREATE TABLE Borrower
     firstname       VARCHAR(63),
     adress          VARCHAR(255),
     phoneNumber     VARCHAR(10),
+    nbBorrow        INT,
     BorrowerTypeID  INT,
 
     FOREIGN KEY (BorrowerTypeID) REFERENCES BorrowerType(ID)
