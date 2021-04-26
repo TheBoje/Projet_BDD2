@@ -2,13 +2,17 @@
 
 Ce projet est à réaliser avant le 3 mai 2021, dans le cadre de l'Unité d'Enseignement "Bases de Données 2". Ce projet porte sur la création et l'utilisation d'une base de données multimédia, et est à réaliser en trinôme.
 
-Composition de notre groupe : Vincent Commin, Louis Leenart & Alexis Louail.
+Composition de notre groupe : **Vincent Commin**, **Louis Leenart** & **Alexis Louail**.
 
 # 1. Conception de la base de données multimédia
 
 &nbsp;Voici le schéma entité association que nous avons réalisé pour le projet :
 
-![MCD temporaire](/images/mcd.png) 
+![schéma entité association](/images/entity_relationship.png) 
+
+&nbsp;Grâce à se schéma entité association, nous avons pu en déduire le schéma relationnel suivant :
+
+![schéma relationnel](/images/Projet_BDD2.png)
 
 ## Problème rencontré
 
@@ -104,6 +108,7 @@ nous n'aurront plus que a faire ensuite un test Exist sur ce join et si ce test 
 - Des documents
 - Des emprunts
 
+&nbsp;Pour rendre le remplissage plus facile, nous avons d'abord remplit la base de données via sqldevelopper puis nous l'avons exporté dans un fichier sql.
 # 6. Interrogation de la base de données multimédia
 &nbsp;L'interrogation de la base de données multimédia est assuré par les requetes contenues dans le fichier `src/Request.sql`. Les requêtes sont les suivantes :
 
