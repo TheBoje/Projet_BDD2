@@ -4,6 +4,27 @@ Ce projet est à réaliser avant le 3 mai 2021, dans le cadre de l'Unité d'Ense
 
 Composition de notre groupe : **Vincent Commin**, **Louis Leenart** & **Alexis Louail**.
 
+La hiérarchie de notre projet est la suivante :
+```bash
+.
+│
+├───images                          # Images contenues dans README.md
+│    ├─── entity_relationship.png   # Schéma entité association
+│    └─── Projet_BDD2.png           # Schéma relationnel
+│
+├───src                             # Fichiers source
+│    ├─── CreateBase.sql            # Créé les tables
+│    ├─── DeleteBase.sql            # Supprime les tables
+│    ├─── Inserting.sql             # Ajoute les données aux tables
+│    ├─── Request.sql               # Requêtes du sujet
+│    └─── Triggers.sql              # Ajoute les triggers (WIP)
+│
+├───VisualParadigme                 # Fichiers de visual paradigme
+│    └─── ...
+├─── README.md                      # Ce fichier 
+├─── README.pdf                     # README.md converti en pdf
+└─── sujet.pdf                      # Sujet du projet
+```
 # 1. Conception de la base de données multimédia
 
 &nbsp;Voici le schéma entité association que nous avons réalisé pour le projet :
@@ -27,8 +48,8 @@ Composition de notre groupe : **Vincent Commin**, **Louis Leenart** & **Alexis L
 ```bash
 .
 └─── src
-     ├─── CreateBase.sql    # Créé les tables de la base
-     └─── DeleteBase.sql    # Supprime les tables et leur contenu de la base
+     ├─── CreateBase.sql    # Créé les tables
+     └─── DeleteBase.sql    # Supprime les tables
 ```
 
 # 3. Gestion des transactions
@@ -92,7 +113,7 @@ A chaque ajout sur Document_Borrower
 
 4. A chaque ajout de document, il est nécessaire de déterminer le type auquel il appartient, pour l'ajouter dans la table correspondante.
 ```
-(pour chacun des types de document <nom_type_doc> faisant référence à la table <type_doc> faire :)
+(pour chacun des types de document <nom_type_doc> faisant référence à la table <type_doc> faire)
 A chaque ajout sur <type_doc>
     ->  Join entre <type_doc>, Document et DocumentType
         Récupération de DocumentType.name
@@ -100,6 +121,11 @@ A chaque ajout sur <type_doc>
     ->  Si DocumentType.name != <nom_type_doc>
         Alors L'ajout est refusé
         Sinon L'ajout est validé
+
+(   Avec:
+    <type_doc> => ["Book", "CD", "DVD", "Video"]
+    <nom_type_doc> => ["livre", "cd", "dvd", "video"]
+)
 ```
 
 5. A l'ajout et au rendu d'un document, mise à jour du nombre de document empruntés par l'emprunteur.
@@ -126,7 +152,7 @@ A chaque suppression sur Document_Borrower
 # 6. Interrogation de la base de données multimédia
 &nbsp;L'interrogation de la base de données multimédia est assuré par les requetes contenues dans le fichier `src/Request.sql`. Les requêtes sont les suivantes :
 
-## 1) Liste par ordre alphabétique des titres de documents dont le thème comprend le mot informatique ou mathématiques
+## 1. Liste par ordre alphabétique des titres de documents dont le thème comprend le mot informatique ou mathématiques
 ```sql
 SELECT title 
 FROM Document 
@@ -136,7 +162,7 @@ WHERE
 ORDER BY title;
 ```
 
-## 2) Liste (titre et thème) des documents empruntés par Dupont entre le 15/11/2018 et le 15/11/2019
+## 2. Liste (titre et thème) des documents empruntés par Dupont entre le 15/11/2018 et le 15/11/2019
 ```sql
 SELECT D.title, DB.dateStart
 FROM Document D
@@ -148,7 +174,7 @@ WHERE
     TO_DATE(DB.dateStart, 'DD/MM/YY') <= TO_DATE('15/11/19', 'DD/MM/YY');
 ```
 
-## 3) Pour chaque emprunteur, donner la liste des titres des documents qu'il a empruntés avec le nom des auteurs pour chaque document
+## 3. Pour chaque emprunteur, donner la liste des titres des documents qu'il a empruntés avec le nom des auteurs pour chaque document
 ```sql
 SELECT B.name, D.title, A.name
 FROM Borrower B
@@ -159,20 +185,20 @@ JOIN Author A               ON A.ID = DA.AuthorID
 ORDER BY B.name;
 ```
 
-## 4) Noms des auteurs ayant écrit un livre édité chez Dunod
+## 4. Noms des auteurs ayant écrit un livre édité chez Dunod
 ```sql
-SELECT D.title, E."name"
+SELECT D.title, E.name
 FROM Document D
 JOIN Editor E           ON E.ID = D.EditorID
 JOIN Document_Author DA ON DA.DocumentID = D.ID
 JOIN Author A           ON A.ID = DA.AuthorID
 JOIN DocumentType DT    ON DT.ID = D.DocumentTypeID
 WHERE
-    E."name" = 'Dunod' AND
+    E.name = 'Dunod' AND
     DT.name = 'Book';
 ```
 
-## 5) Quantité totale des exemplaires édités chez Eyrolles
+## 5. Quantité totale des exemplaires édités chez Eyrolles
 ```sql
 SELECT SUM(quantite)
 FROM Document D
@@ -180,15 +206,15 @@ JOIN Editor E   ON E.ID = D.EditorID
 WHERE E."name" = 'Eyrolles';
 ```
 
-## 6) Pour chaque éditeur, nombre de documents présents à la bibliothèque
+## 6. Pour chaque éditeur, nombre de documents présents à la bibliothèque
 ```sql
-SELECT E."name", COUNT(D.title) AS "Nb docs"
+SELECT E.name, COUNT(D.title) AS "Nb docs"
 FROM Document D
 JOIN Editor E ON E.ID = D.EditorID
-GROUP BY E."name";
+GROUP BY E.name;
 ```
 
-## 7) Pour chaque document, nombre de fois où il a été emprunté
+## 7. Pour chaque document, nombre de fois où il a été emprunté
 ```sql
 SELECT D.title, COUNT(DB.DocumentID) AS "Nb borrowing"
 FROM Document D
@@ -196,21 +222,21 @@ JOIN Document_Borrower DB ON DB.DocumentID = D.ID
 GROUP BY D.title;
 ```
 
-## 8) Liste des éditeurs ayant édité plus de deux documents d'informatique ou de mathématiques
+## 8. Liste des éditeurs ayant édité plus de deux documents d'informatique ou de mathématiques
 ```sql
 SELECT "nameEditor"
 FROM
     (
-        SELECT E."name" AS "nameEditor", COUNT(D.title) AS "nbInfoMaths"
+        SELECT E.name AS "nameEditor", COUNT(D.title) AS "nbInfoMaths"
         FROM Document D
         JOIN Editor E ON E.ID = D.EditorID
         WHERE D.mainTheme = 'Informatique' OR D.mainTheme = 'Mathématiques'
-        GROUP BY E."name"
+        GROUP BY E.name
     )
 WHERE "nbInfoMaths" >= 2;
 ```
 
-## 9) Noms des emprunteurs habitant la même adresse que Dupont
+## 9. Noms des emprunteurs habitant la même adresse que Dupont
 ```sql
 SELECT B2.name, B2.firstname
 FROM Borrower B1, Borrower B2
@@ -220,9 +246,9 @@ WHERE
 GROUP BY B2.name, B2.firstname;
 ```
 
-## 10) Liste des éditeurs n'ayant pas édité de documents d'informatique
+## 10. Liste des éditeurs n'ayant pas édité de documents d'informatique
 ```sql
-SELECT E."name"
+SELECT E.name
 FROM Editor E
 WHERE 
 E.ID NOT IN
@@ -235,7 +261,7 @@ E.ID NOT IN
     );
 ```
 
-## 11) Noms des personnes n'ayant jamais emprunté de documents
+## 11. Noms des personnes n'ayant jamais emprunté de documents
 ```sql
 SELECT name, firstname
 FROM Borrower
@@ -248,7 +274,7 @@ ID NOT IN
     );
 ```
 
-## 12) Liste des documents n'ayant jamais été empruntés
+## 12. Liste des documents n'ayant jamais été empruntés
 ```sql
 SELECT title
 FROM Document
@@ -261,7 +287,7 @@ ID NOT IN
     );
 ```
 
-## 13) Liste des emprunteurs (nom, prénom) appartenant à la catégorie des professionnels ayant emprunté au moins une fois un DVD au cours des 6 derniers mois
+## 13. Liste des emprunteurs (nom, prénom) appartenant à la catégorie des professionnels ayant emprunté au moins une fois un DVD au cours des 6 derniers mois
 ```sql
 SELECT B.name, B.firstname
 FROM Borrower B
@@ -275,7 +301,7 @@ WHERE
     MONTHS_BETWEEN(DB.dateStart, SYSDATE) <= 6;
 ```
 
-## 14) Liste des documents dont le nombre d'exemplaires est supérieur au nombre moyen d'exemplaires
+## 14. Liste des documents dont le nombre d'exemplaires est supérieur au nombre moyen d'exemplaires
 ```sql
 SELECT title
 FROM Document,
@@ -286,7 +312,7 @@ FROM Document,
 WHERE quantity > "avg";
 ```
 
-## 15) Noms des auteurs ayant écrit des documents d'informatique et de mathématiques (ceux qui ont écrit les deux)
+## 15. Noms des auteurs ayant écrit des documents d'informatique et de mathématiques (ceux qui ont écrit les deux)
 ```sql
 SELECT name
 FROM Author
@@ -307,21 +333,21 @@ ID IN
     );
 ```
 
-## 16) Éditeur dont le nombre de documents empruntés est le plus grand
+## 16. Éditeur dont le nombre de documents empruntés est le plus grand
 ```sql
 SELECT DISTINCT "EditorName", MAX("nbBorrow")
 FROM
     (
-        SELECT E."name" AS "EditorName", COUNT(dateStart) AS "nbBorrow"
+        SELECT E.name AS "EditorName", COUNT(dateStart) AS "nbBorrow"
         FROM Document_Borrower DB
         JOIN Document D ON D.ID = DB.DocumentID
         JOIN Editor E   ON E.ID = D.EditorID
-        GROUP BY E."name"
+        GROUP BY E.name
     )
 GROUP BY "EditorName";
 ```
 
-## 17) Liste des documents n'ayant aucun mot cléf en commun avec le document dont le titre est "SQL pour les nuls"
+## 17. Liste des documents n'ayant aucun mot cléf en commun avec le document dont le titre est "SQL pour les nuls"
 Pour rendre les requetes plus lisibles, nous mettons en place des vues qui sont les suivantes:
 ```sql
 -- Vue contenant les mots clés de SQL pour les nuls
@@ -354,14 +380,14 @@ ID NOT IN
 GROUP BY title;
 ```
 
-## 18) Liste des documents ayant au moins un mot-clef en commun avec le document dont le titre est "SQL pour les nuls"
+## 18. Liste des documents ayant au moins un mot-clef en commun avec le document dont le titre est "SQL pour les nuls"
 ```sql
 SELECT title 
 FROM docs_with_at_least_one_keyword_with_sql_pour_les_nuls
 GROUP BY title;
 ```
 
-## 19) Liste des documents ayant au moins les mêmes mot-clef que le document dont le titre est "SQL pour les nuls"
+## 19. Liste des documents ayant au moins les mêmes mot-clef que le document dont le titre est "SQL pour les nuls"
 
 Pour les deux prochaines requête, on créer un type `number_tt` qui est une table de number.
 
@@ -387,7 +413,7 @@ WHERE
     dk2.title = 'SQL pour les nuls';
 ```
 
-## 20) Liste des documents ayant exactement les mêmes mot-clef que le document dont le titre est "SQL pour les nuls"
+## 20. Liste des documents ayant exactement les mêmes mot-clef que le document dont le titre est "SQL pour les nuls"
 ```sql
 WITH document_keywords_agg(documentid, title, keywordlist, keywordids) AS (
     SELECT d.id, d.title
@@ -407,44 +433,44 @@ WHERE
 ```
 
 # 7. Optimisation des requêtes
-## 1) Liste par ordre alphabétique des titres de documents dont le thème comprend le mot informatique ou mathématiques
+## 1. Liste par ordre alphabétique des titres de documents dont le thème comprend le mot informatique ou mathématiques
 Ici on pourrait mettre un index par hachage sur le `Document.mainTheme` étant donné une égalisation stricte.
-## 2) Liste (titre et thème) des documents empruntés par Dupont entre le 15/11/2018 et le 15/11/2019
+## 2. Liste (titre et thème) des documents empruntés par Dupont entre le 15/11/2018 et le 15/11/2019
 Ici nous pourrions utiliser un Arbre-b sur la date `Document_Borrower.dateStart` étant donné les inégalités.
-## 3) Pour chaque emprunteur, donner la liste des titres des documents qu'il a empruntés avec le nom des auteurs pour chaque document
+## 3. Pour chaque emprunteur, donner la liste des titres des documents qu'il a empruntés avec le nom des auteurs pour chaque document
 Ici on a pas besoin d'index, la question pourra se poser sur la méthode de calcul de jointure utilisée.
-## 4) Noms des auteurs ayant écrit un livre édité chez Dunod
+## 4. Noms des auteurs ayant écrit un livre édité chez Dunod
 Ici nous pouvons utiliser le hachage sur le nom de  l'éditeur et sur le nom du type de document. Mais ici aussi, vu le nombre de jointures. On peut se concentrer sur le calcul de la jointure. On peut aussi utiliser un index bitmap car `DocumentType.name` est un domaine restreint (ici 4 valeurs seulement).
-## 5) Quantité totale des exemplaires édités chez Eyrolles
+## 5. Quantité totale des exemplaires édités chez Eyrolles
 Ici on peut utiliser un hachage sur le nom de l'éditeur `Editor.name` grâce à une égalité stricte.
-## 6) Pour chaque éditeur, nombre de documents présents à la bibliothèque
+## 6. Pour chaque éditeur, nombre de documents présents à la bibliothèque
 Ici nous n'avons pas besoin d'index.
-## 7) Pour chaque document, nombre de fois où il a été emprunté
+## 7. Pour chaque document, nombre de fois où il a été emprunté
 Ici nous n'avons pas besoin d'index.
-## 8) Liste des éditeurs ayant édité plus de deux documents d'informatique ou de mathématiques
+## 8. Liste des éditeurs ayant édité plus de deux documents d'informatique ou de mathématiques
 On peut ici utiliser un hachage sur `Document.mainTheme`.
-## 9) Noms des emprunteurs habitant la même adresse que Dupont
+## 9. Noms des emprunteurs habitant la même adresse que Dupont
 Ici on peut mettre un index de hachage sur `Borrower.firstname`.
-## 10) Liste des éditeurs n'ayant pas édité de documents d'informatique
+## 10. Liste des éditeurs n'ayant pas édité de documents d'informatique
 Ici on peut mettre un index de hachage sur `Document.mainTheme` grâce à l'égalite stricte.
-## 11) Noms des personnes n'ayant jamais emprunté de documents
+## 11. Noms des personnes n'ayant jamais emprunté de documents
 Ici nous n'avons pas besoin d'index.
-## 12) Liste des documents n'ayant jamais été empruntés
+## 12. Liste des documents n'ayant jamais été empruntés
 Ici nous n'avons pas besoin d'index.
-## 13) Liste des emprunteurs (nom, prénom) appartenant à la catégorie des professionnels ayant emprunté au moins une fois un DVD au cours des 6 derniers mois
+## 13. Liste des emprunteurs (nom, prénom) appartenant à la catégorie des professionnels ayant emprunté au moins une fois un DVD au cours des 6 derniers mois
 Ici nous pouvons mettre un index Arbre-b sur `Document_Borrower.dateStart`.
-## 14) Liste des documents dont le nombre d'exemplaires est supérieur au nombre moyen d'exemplaires
+## 14. Liste des documents dont le nombre d'exemplaires est supérieur au nombre moyen d'exemplaires
 Ici nous pouvons mettre un index Arbre-b sur `Document.quantity`.
-## 15) Noms des auteurs ayant écrit des documents d'informatique et de mathématiques (ceux qui ont écrit les deux)
+## 15. Noms des auteurs ayant écrit des documents d'informatique et de mathématiques (ceux qui ont écrit les deux)
 Ici nous pouvons mettre un index de hachage sur `Document.mainTheme` via les égalités strictes.
-## 16) Éditeur dont le nombre de documents empruntés est le plus grand
+## 16. Éditeur dont le nombre de documents empruntés est le plus grand
 Ici on peut se concentrer sur le calcul de la jointure plutôt que sur un index.
-## 17) Liste des documents n'ayant aucun mot cléf en commun avec le document dont le titre est "SQL pour les nuls"
+## 17. Liste des documents n'ayant aucun mot cléf en commun avec le document dont le titre est "SQL pour les nuls"
 ### Vue sql_pour_les_nuls_keywords
 Ici on peut utiliser un index de hachage via l'égalité stricte.
-## 18) Liste des documents ayant au moins un mot-clef en commun avec le document dont le titre est "SQL pour les nuls"
+## 18. Liste des documents ayant au moins un mot-clef en commun avec le document dont le titre est "SQL pour les nuls"
 Ici on fait deux jointures, on peut donc se concentrer sur la technique de calcul des jointures.
-## 19) Liste des documents ayant au moins les mêmes mot-clef que le document dont le titre est "SQL pour les nuls"
-Ici nous pouvons mettre un index secondaire sur le nom des mots-clés pour accélérer la recherche de cceux-ci.
-## 20) Liste des documents ayant exactement les mêmes mot-clef que le document dont le titre est "SQL pour les nuls"
-Ici nous pouvons mettre un index secondaire sur le nom des mots-clés pour accélérer la recherche de cceux-ci.
+## 19. Liste des documents ayant au moins les mêmes mot-clef que le document dont le titre est "SQL pour les nuls"
+Ici nous pouvons mettre un index secondaire sur le nom des mots-clés pour accélérer la recherche de ceux-ci.
+## 20. Liste des documents ayant exactement les mêmes mot-clef que le document dont le titre est "SQL pour les nuls"
+Ici nous pouvons mettre un index secondaire sur le nom des mots-clés pour accélérer la recherche de ceux-ci.
