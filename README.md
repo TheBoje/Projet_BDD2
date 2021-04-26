@@ -23,11 +23,17 @@ Composition de notre groupe : **Vincent Commin**, **Louis Leenart** & **Alexis L
 
 # 2. Création de la base de données multimédia
 
-TODO : Réaliser la base via Visual paradigm a partir du MCD
+&nbsp;L'initialisation (et manipulation) de la base de données se fait via les fichiers suivants :
+```bash
+.
+└─── src
+     ├─── CreateBase.sql    # Créé les tables de la base
+     └─── DeleteBase.sql    # Supprime les tables et leur contenu de la base
+```
 
 # 3. Gestion des transactions
 
-&nbsp;Pour le moment nous avons penser à utiliser les verrous pour gèrer les différentes transactions simultanées. Bien sûr, nous appliquerons l'algorithme de prévention des verrous mortels.
+&nbsp;Pour gérer au mieux les transactions, nous avons décidé d'utiliser l'option d'AUTOCOMMIT disponible pour Oracle. Pour l'activer (pour SQLDevelopper), Tools > Preferences > Database > Advanced > Autocommit > Coché.
 
 # 4. Vérification de la cohérence de la base
 
@@ -38,7 +44,7 @@ TODO : Réaliser la base via Visual paradigm a partir du MCD
 4. A chaque ajout de document, il est nécessaire de déterminer le type auquel il appartient, pour l'ajouter dans la table correspondante.
 5. A l'ajout et au rendu d'un document, mise à jour du nombre de document empruntés par l'emprunteur.
 
-Suite à des problèmes de gestion du temps, et des difficultées à appliquer correctement la syntaxe de SQL, nous n'avons pas terminé la mise en place des différents triggers. Cependant, voici la méthode que nous aurions appliqué pour chacun des cas.
+&nbsp;<b>Suite à des problèmes de gestion du temps, et des difficultées à appliquer correctement la syntaxe de SQL, nous n'avons pas terminé la mise en place des différents triggers. Cependant, voici la méthode que nous aurions appliqué pour chacun des cas.</b>
 
 1. Verification lors de l'emprunt si les exemplaires ne sont pas tous déjà empruntés (c'est-à-dire qu'au moins 1 exemplaire est disponible) :
 ```
@@ -85,18 +91,26 @@ A chaque ajout sur Document_Borrower
 ```
 
 4. A chaque ajout de document, il est nécessaire de déterminer le type auquel il appartient, pour l'ajouter dans la table correspondante.
-
 ```
-A chaque ajout sur Document
-    -> 
+(pour chacun des types de document <nom_type_doc> faisant référence à la table <type_doc> faire :)
+A chaque ajout sur <type_doc>
+    ->  Join entre <type_doc>, Document et DocumentType
+        Récupération de DocumentType.name
+
+    ->  Si DocumentType.name != <nom_type_doc>
+        Alors L'ajout est refusé
+        Sinon L'ajout est validé
 ```
 
-il faut tout d'abord faire un join entre la table DoCument type et l'insertion  sur leur id avec un where ou docuementtype.name testeras un type de document.
-nous n'aurront plus que a faire ensuite un test Exist sur ce join et si ce test est vrai alors on feras une insertion sur la talbe qui seras tester avec l'id de l'insertion faite sur docuement.
+5. A l'ajout et au rendu d'un document, mise à jour du nombre de document empruntés par l'emprunteur.
+```
+A chaque ajout sur Document_Borrower
+    ->  Modification Document.quantity -= 1 (l'ajout du nbBorrow dans Borrower est géré dans un autre trigger)
 
-
-
-
+A chaque suppression sur Document_Borrower
+    ->  Modification Document.quantity += 1
+    ->  Modification Borrower.nbBorrow -= 1
+```
 
 # 5. Remplissage de la base de données multimédia
 &nbsp;Le remplissage de notre base de données est assuré par le fichier `src/Inserting.sql`, dans lequel on ajoute :
