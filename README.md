@@ -362,13 +362,48 @@ GROUP BY title;
 ```
 
 ## 19) Liste des documents ayant au moins les mêmes mot-clef que le document dont le titre est "SQL pour les nuls"
+
+Pour les deux prochaines requête, on créer un type `number_tt` qui est une table de number.
+
 ```sql
-TODO
+CREATE OR REPLACE TYPE number_tt AS TABLE OF NUMBER;
+```
+
+```sql
+WITH document_keywords_agg(documentid, title, keywordlist, keywordids) AS (
+    SELECT d.id, d.title
+         , listagg(dk.keywordid, ', ') WITHIN GROUP (ORDER BY dk.keywordid)
+         , CASE(COLLECT(dk.keywordid) AS number_tt)
+    FROM   Document d
+           JOIN document_keywords dk ON dk.documentid = d.id
+    GROUP BY d.id, d.title
+  )
+SELECT dk1.title
+FROM   document_keywords_agg dk1
+       JOIN document_keywords_agg dk2
+            ON dk2.keywordids submultiset OF dk1.keywordids
+WHERE  
+    dk2.documentid <> dk1.documentid AND
+    dk2.title = 'SQL pour les nuls';
 ```
 
 ## 20) Liste des documents ayant exactement les mêmes mot-clef que le document dont le titre est "SQL pour les nuls"
 ```sql
-TODO
+WITH document_keywords_agg(documentid, title, keywordlist, keywordids) AS (
+    SELECT d.id, d.title
+         , listagg(dk.keywordid, ', ') WITHIN GROUP (ORDER BY dk.keywordid)
+         , CAST(COLLECT(dk.keywordid) AS number_tt)
+    FROM   Document d
+           JOIN document_keywords dk ON dk.documentid = d.id
+    GROUP BY d.id, d.title
+  )
+SELECT dk1.title
+FROM   document_keywords_agg dk1
+       JOIN document_keywords_agg dk2
+            ON dk2.keywordids = dk1.keywordids
+WHERE  
+    dk2.documentid <> dk1.documentid AND
+    dk2.title = 'SQL pour les nuls';
 ```
 
 # 7. Optimisation des requêtes
@@ -408,7 +443,7 @@ Ici on peut se concentrer sur le calcul de la jointure plutôt que sur un index.
 ### Vue sql_pour_les_nuls_keywords
 Ici on peut utiliser un index de hachage via l'égalité stricte.
 ## 18) Liste des documents ayant au moins un mot-clef en commun avec le document dont le titre est "SQL pour les nuls"
-TODO
+Ici on fait deux jointures, on peut donc se concentrer sur la technique de calcul des jointures.
 ## 19) Liste des documents ayant au moins les mêmes mot-clef que le document dont le titre est "SQL pour les nuls"
 TODO
 ## 20) Liste des documents ayant exactement les mêmes mot-clef que le document dont le titre est "SQL pour les nuls"

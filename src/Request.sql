@@ -221,50 +221,51 @@ GROUP BY title;
 
 -- 18 Liste des documents ayant au moins un mot-clef
 -- en commun avec le document dont le titre est"SQL pour les nuls"
-Select D.Title
-From Document_Keywords A 
-Inner Join sql_pour_les_nuls_keywords B 
-    On A.KeywordID = B.KeywordID
-    And A.DocumentID <> B.DocumentID
-Inner Join Document D on D.ID = A.DocumentID
+-- Ici on fait deux jointures, on peut donc se concentrer sur la technique de calcul des jointures.
+SELECT D.Title
+FROM Document_Keywords A 
+INNER JOIN sql_pour_les_nuls_keywords B 
+    ON A.KeywordID = B.KeywordID
+    AND A.DocumentID <> B.DocumentID
+INNER JOIN Document D ON D.ID = A.DocumentID
 GROUP BY D.title;
 
 
 -- 19 Liste des documents ayant au moins 
 -- les mêmes mot-clef que le document dont le titre est "SQL pour les nuls".
 -- Requete venant en grande partie de M. William Robertson de StackOverflow qui nous a aide pour cette question.
-create or replace type number_tt as table of number;
+CREATE OR REPLACE TYPE number_tt AS TABLE OF NUMBER;
 
-with document_keywords_agg(documentid, title, keywordlist, keywordids) as (
-    select d.id, d.title
-         , listagg(dk.keywordid, ', ') within group (order by dk.keywordid)
-         , cast(collect(dk.keywordid) as number_tt)
-    from   Document d
-           join document_keywords dk on dk.documentid = d.id
-    group by d.id, d.title
+WITH document_keywords_agg(documentid, title, keywordlist, keywordids) AS (
+    SELECT d.id, d.title
+         , listagg(dk.keywordid, ', ') WITHIN GROUP (ORDER BY dk.keywordid)
+         , CASE(COLLECT(dk.keywordid) AS number_tt)
+    FROM   Document d
+           JOIN document_keywords dk ON dk.documentid = d.id
+    GROUP BY d.id, d.title
   )
-select dk1.title
-from   document_keywords_agg dk1
-       join document_keywords_agg dk2
-            on dk2.keywordids submultiset of dk1.keywordids
-where  
+SELECT dk1.title
+FROM   document_keywords_agg dk1
+       JOIN document_keywords_agg dk2
+            ON dk2.keywordids submultiset OF dk1.keywordids
+WHERE  
     dk2.documentid <> dk1.documentid AND
     dk2.title = 'SQL pour les nuls';
 
 -- 20 Liste des documents ayant exactement 
 -- les memes mot-clef que le document dont le titre est "SQL pour les nuls".
-with document_keywords_agg(documentid, title, keywordlist, keywordids) as (
-    select d.id, d.title
-         , listagg(dk.keywordid, ', ') within group (order by dk.keywordid)
-         , cast(collect(dk.keywordid) as number_tt)
-    from   Document d
-           join document_keywords dk on dk.documentid = d.id
-    group by d.id, d.title
+WITH document_keywords_agg(documentid, title, keywordlist, keywordids) AS (
+    SELECT d.id, d.title
+         , listagg(dk.keywordid, ', ') WITHIN GROUP (ORDER BY dk.keywordid)
+         , CAST(COLLECT(dk.keywordid) AS number_tt)
+    FROM   Document d
+           JOIN document_keywords dk ON dk.documentid = d.id
+    GROUP BY d.id, d.title
   )
-select dk1.title
-from   document_keywords_agg dk1
-       join document_keywords_agg dk2
-            on dk2.keywordids = dk1.keywordids
-where  
+SELECT dk1.title
+FROM   document_keywords_agg dk1
+       JOIN document_keywords_agg dk2
+            ON dk2.keywordids = dk1.keywordids
+WHERE  
     dk2.documentid <> dk1.documentid AND
     dk2.title = 'SQL pour les nuls';
