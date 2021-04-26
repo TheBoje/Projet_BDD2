@@ -267,5 +267,4 @@ from   document_keywords_agg dk1
             on dk2.keywordids = dk1.keywordids
 where  
     dk2.documentid <> dk1.documentid AND
-    dk2.title = 'SQL pour les nuls'
-;
+    dk2.title = 'SQL pour les nuls';
