@@ -445,6 +445,6 @@ Ici on peut utiliser un index de hachage via l'égalité stricte.
 ## 18) Liste des documents ayant au moins un mot-clef en commun avec le document dont le titre est "SQL pour les nuls"
 Ici on fait deux jointures, on peut donc se concentrer sur la technique de calcul des jointures.
 ## 19) Liste des documents ayant au moins les mêmes mot-clef que le document dont le titre est "SQL pour les nuls"
-TODO
+Ici nous pouvons mettre un index secondaire sur le nom des mots-clés pour accélérer la recherche de cceux-ci.
 ## 20) Liste des documents ayant exactement les mêmes mot-clef que le document dont le titre est "SQL pour les nuls"
-TODO
+Ici nous pouvons mettre un index secondaire sur le nom des mots-clés pour accélérer la recherche de cceux-ci.
