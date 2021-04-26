@@ -28,42 +28,64 @@ TODO : Réaliser la base via Visual paradigm a partir du MCD
 # 4. Vérification de la cohérence de la base
 
 &nbsp;Pour la cohérence de la base de donnée nous nous somme centrée autour de plusieurs points : 
-- Verification lors de l'ajout d'un emprunt si les exemplaires ne sont pas tous  deja emprunter
-- Que le nombre d'emprunt maximal d'une personne suivant sa categorie et la categorie du document n'est pas deja atteinte lors d'un nouvelle emprunt
-- Qu'un document ne peut pas étre emprunter si le demandeur de l'emprunt na pas rendu un document a temps.
-- lors de l'ajout d'un document on doit verifier de quel type il est est l'ajouter dans la table du type correspondant
+1. Verification lors de l'emprunt si les exemplaires ne sont pas tous déjà empruntés (c'est-à-dire qu'au moins 1 exemplaire est disponible).
+2. Le nombre d'emprunt maximal d'une personne (valeur dépendant de la catégorie de l'emprunteur et du document) ne doit pas être dépassé avec l'emprunt d'un nouveau document.
+3. Si un emprunteur est en retard pour la remise d'au moins 1 document, alors il ne peut pas en emprunter d'autres avant de le(s) avoir rendu(s).
+4. A chaque ajout de document, il est nécessaire de déterminer le type auquel il appartient, pour l'ajouter dans la table correspondante.
+5. A l'ajout et au rendu d'un document, mise à jour du nombre de document empruntés par l'emprunteur.
 
-Malheuresement nous avons quelque soucis avec la syntaxe sql nous empechant de faire des triggers fonctionnel mais nous avons pour chacun un pseudo codes.
+Suite à des problèmes de gestion du temps, et des difficultées à appliquer correctement la syntaxe de SQL, nous n'avons pas terminé la mise en place des différents triggers. Cependant, voici la méthode que nous aurions appliqué pour chacun des cas.
 
--Pour la verification si un document est deja emprunter :
+1. Verification lors de l'emprunt si les exemplaires ne sont pas tous déjà empruntés (c'est-à-dire qu'au moins 1 exemplaire est disponible) :
+```
+A chaque ajout sur Document_borrower
+    ->  Join entre Document et Document_borrower
+        Where id du document = l'id du document que l'on souhaite emprunter,
+              avec retour indéfini (donc null) 
+              avec quantité du document > 0
 
- a chaque ajout sur Document_borrower
- on va faire un join entre Document et Document_borrower avec un where 
- ou l'id du document vaux l'id du document que l'on shouaite emprunter ,que le retour ne soit pas encore fait (donc null) et enfin que la quantités du document ne soit pas a 0. 
- Ensuite on va compter le nombre de document que le join a trouver et le comparer avec la quantité du document que l'on shouaite emprunter.
- Si cette dernier est inferieure a celle trouver sur le join alors cela signifique que tout les documents sont emprunter.
+    ->  Ensuite On compte le nombre de document total du Join précédent
+        Si nombre de document empruntés < nombre total de document
+        Alors L'emprunt est validé
+        Sinon L'emprunt est refusé
+```
 
+2. Le nombre d'emprunt maximal d'une personne (valeur dépendant de la catégorie de l'emprunteur et du document) ne doit pas être dépassé avec l'emprunt d'un nouveau document.
 
--Pour le nombre maximal d'emprunt suivant une type de document et le type de personne qui l'emprinte :
+```
+A chaque ajout sur Document_borrower
+    -> Join entre Borrower, BorrowerType, Document_Borrower, Document, DocumentType et BorrowerType_DocumentType
+        Récupération de nbBorrow et nbBorrowMax du document/emprunteur en question
+    
+    ->  Si nbBorrow + 1 <= nbBorrowMax
+        Alors L'emprunt est validé
+        Sinon L'emprunt est refusé
+```
+On note que ce trigger fais appel à de nombreuses jointures pour pouvoir récupérer les bonnes données. De ce fait, si les tables sont menées à grandir, l'ordre des jointures doit être examiné afin de réduire le temps de calcul.
 
- Dans un premier temps il nous faut recuperer quel categorie de personne l'emprunteur se trouve pour cela on va faire un join entre l'id de l'empriteur de la table Document_Borrower et Borrower avec un where nous donnant l'id rechercher grace a l'insertion.nous permetant de recuper l'id de la categorie du Borrower.
- Dans un second temps nous allons faire a peut pres le meme systeme pour recupérer l'idtype du document en fesant un join entre la table Document_borrower et Document nous donnant le documentTypeID 
- ensuite nous allons compter combien de document de ce type il posséde pour cela on utilise la COUNT sur un join sur Docuement borrower et Document avec les document ID comme liens avec un where ou DocuemenTypeID est egal a celuti trouver juste avant. 
+3. Si un emprunteur est en retard pour la remise d'au moins 1 document, alors il ne peut pas en emprunter d'autres avant de le(s) avoir rendu(s).
 
- Avec ces informations nous avons plus que a chercher une correspondance dans la table BorrowerYpe_DocuementType et on obtient du coup le nombre d'imprunt max on compare ce nombre avec le nombre d'emprunt que l'on a calculer plus haut. si ce chiffre est superieur ou egale alors on resort une erreur.
+```
+A chaque ajout sur Document_Borrower
+    ->  Join entre Borrower, BorrowerType, Document_Borrower, Document, DocumentType et BorrowerType_DocumentType
+        Récupération de durationBorrowMax et dateStart
+    ->  Pour chacun des documents empruntés
+            Initialisation de compteur
+            Si dateStart + durationBorrowMax est après la date du jour
+            Alors compteur += 1
+    
+    ->  Si compteur = 0
+        Alors L'emprunt est validé
+        Sinon L'emprunt est refusé     
 
- 
--Pour la verification si l'emprunteur a un retard sur l'une de ses requete :
+```
 
- Dans un premier temps on va recuperer le tmeps maximal pour l'emprint nous allons donc refaire la meme choses que pour le triger precedent recuperer quel categorie de personne l'emprunteur se trouve pour cela on va faire un join entre l'id de l'empriteur de la table Document_Borrower et Borrower avec un where nous donnant l'id rechercher grace a l'insertion.nous permetant de recuper l'id de la categorie du Borrower.
- Dans un second temps nous allons faire a peut pres le meme systeme pour recupérer l'idtype du document en fesant un join entre la table Document_borrower et Document nous donnant le documentTypeID 
- ensuite avec ses infos on va chercher une correspondance dans la table BorrowerYpe_DocuementType et on obtient du coup le temps max d'emprunt .
+4. A chaque ajout de document, il est nécessaire de déterminer le type auquel il appartient, pour l'ajouter dans la table correspondante.
 
- enfin on va faire un test not is null sur un select de la table borrower avec un where qui selectione l'id du borrower qui fait l'insertion et qui chercher une date_return>(date_start +temps_max ) .
- si la table est vide on fait l'insertion sinon on renvoie une erreur.
-
- 
- -Pour ce qui est de l'ajout d'un document suivat son type lorsque que l'on ajoute un document:
+```
+A chaque ajout sur Document
+    -> 
+```
 
 il faut tout d'abord faire un join entre la table DoCument type et l'insertion  sur leur id avec un where ou docuementtype.name testeras un type de document.
 nous n'aurront plus que a faire ensuite un test Exist sur ce join et si ce test est vrai alors on feras une insertion sur la talbe qui seras tester avec l'id de l'insertion faite sur docuement.
@@ -298,7 +320,7 @@ JOIN Document_Keywords DK ON DK.DocumentID = D.ID
 WHERE
 DK.KeywordID IN 
     (
-        SELECT * FROM sql_pour_les_nuls_keywords
+        SELECT KeywordID FROM sql_pour_les_nuls_keywords
     );
 ```
 

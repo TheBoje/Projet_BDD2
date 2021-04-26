@@ -37,8 +37,8 @@ CREATE TABLE Document
     EditorID        INT,
     DocumentTypeID  INT,
 
-    FOREIGN KEY (EditorID) REFERENCES Editor(ID),
-    FOREIGN KEY (DocumentTypeID) REFERENCES DocumentType(ID)
+    CONSTRAINT fk_document_editor FOREIGN KEY (EditorID) REFERENCES Editor(ID),
+    CONSTRAINT fk_document_documentType FOREIGN KEY (DocumentTypeID) REFERENCES DocumentType(ID)
 );
 
 CREATE TABLE Book
@@ -46,7 +46,7 @@ CREATE TABLE Book
     DocumentID  INT PRIMARY KEY NOT NULL,
     nbPages     INT,
 
-    FOREIGN KEY (DocumentID) REFERENCES Document(ID)
+    CONSTRAINT fk_book_document FOREIGN KEY (DocumentID) REFERENCES Document(ID)
 );
 
 CREATE TABLE DVD
@@ -54,7 +54,7 @@ CREATE TABLE DVD
     DocumentID  INT PRIMARY KEY NOT NULL,
     duration    INT,
 
-    FOREIGN KEY (DocumentID) REFERENCES Document(ID)
+    CONSTRAINT fk_dvd_document FOREIGN KEY (DocumentID) REFERENCES Document(ID)
 );
 
 CREATE TABLE CD
@@ -63,7 +63,7 @@ CREATE TABLE CD
     duration    INT,
     nbSubtitles INT,
 
-    FOREIGN KEY (DocumentID) REFERENCES Document(ID)
+    CONSTRAINT fk_cd_document FOREIGN KEY (DocumentID) REFERENCES Document(ID)
 );
 
 CREATE TABLE Video
@@ -72,7 +72,7 @@ CREATE TABLE Video
     duration        INT,
     recordingFormat VARCHAR(10),
 
-    FOREIGN KEY (DocumentID) REFERENCES Document(ID)
+    CONSTRAINT fk_video_document FOREIGN KEY (DocumentID) REFERENCES Document(ID)
 );
 
 -- MOTS CLES
@@ -88,8 +88,8 @@ CREATE TABLE Document_Keywords
     KeywordID   INT NOT NULL,
 
     PRIMARY KEY (DocumentID, KeywordID),
-    FOREIGN KEY (DocumentID) REFERENCES Document(ID),
-    FOREIGN KEY (KeywordID) REFERENCES Keywords(ID)
+    CONSTRAINT fk_document_keywords_document FOREIGN KEY (DocumentID) REFERENCES Document(ID),
+    CONSTRAINT fk_document_keywords_keywords FOREIGN KEY (KeywordID) REFERENCES Keywords(ID)
 );
 
 -- AUTEUR.S DE DOCUMENTS
@@ -99,8 +99,8 @@ CREATE TABLE Document_Author
     AuthorID    INT NOT NULL,
 
     PRIMARY KEY (DocumentID, AuthorID),
-    FOREIGN KEY (DocumentID) REFERENCES Document(ID),
-    FOREIGN KEY (AuthorID) REFERENCES Author(ID)
+    CONSTRAINT fk_document_author_document FOREIGN KEY (DocumentID) REFERENCES Document(ID),
+    CONSTRAINT fk_document_author_author   FOREIGN KEY (AuthorID) REFERENCES Author(ID)
 );
 
 -- EMPRUNTEURS ET NOMBRES D'EMPRUNTS
@@ -118,8 +118,8 @@ CREATE TABLE BorrowerType_DocumentType
     durationBorrowMax   INT,
 
     PRIMARY KEY (BorrowerTypeID, DocumentTypeID),
-    FOREIGN KEY (BorrowerTypeID) REFERENCES BorrowerType(ID),
-    FOREIGN KEY (DocumentTypeID) REFERENCES DocumentType(ID)
+    CONSTRAINT fk_borrowertype_documenttype_borrowertype FOREIGN KEY (BorrowerTypeID) REFERENCES BorrowerType(ID),
+    CONSTRAINT fk_borrowertype_documenttype_documenttype FOREIGN KEY (DocumentTypeID) REFERENCES DocumentType(ID)
 );
 
 CREATE TABLE Borrower
@@ -132,7 +132,7 @@ CREATE TABLE Borrower
     nbBorrow        INT,
     BorrowerTypeID  INT,
 
-    FOREIGN KEY (BorrowerTypeID) REFERENCES BorrowerType(ID)
+    CONSTRAINT fk_borrower_borrowertype FOREIGN KEY (BorrowerTypeID) REFERENCES BorrowerType(ID)
 );
 
 CREATE TABLE Document_Borrower
@@ -143,8 +143,8 @@ CREATE TABLE Document_Borrower
     dateReturn  DATE,
 
     PRIMARY KEY (DocumentID, BorrowerID),
-    FOREIGN KEY (DocumentID) REFERENCES Document(ID),
-    FOREIGN KEY (BorrowerID) REFERENCES Borrower(ID)
+    CONSTRAINT fk_document_borrower_document FOREIGN KEY (DocumentID) REFERENCES Document(ID),
+    CONSTRAINT fk_document_borrower_borrower FOREIGN KEY (BorrowerID) REFERENCES Borrower(ID)
 );
 
 COMMIT;

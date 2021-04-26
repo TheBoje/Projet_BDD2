@@ -1,3 +1,24 @@
+-- test si un document est pas deja emprunter
+DROP TRIGGER TRIGGER2;
+CREATE OR REPLACE TRIGGER TRIGGER2 
+BEFORE INSERT ON DOCUMENT_BORROWER 
+BEGIN
+
+CREATE LOCAL TEMPORARY VIEW tempo AS 
+SELECT D.Quantity
+FROM Document D
+JOIN Document_Borrower DB  ON DB.DocumentID = D.ID
+WHERE D.ID = NEW.DOCUEMENTID
+
+if (COUNT(SELECT DB.DocumentID
+FROM Document_Borrower DB
+join Document D on DB.DocumentID = D.ID
+Where (DB.DocumentID=NEW.DocumentID  and (DB.dateReturn IS NULL) and D.QUANTITY > 0))> tempo.quantity)
+THEN raise_application_error('-20001', 'All Document Already Borrowed') ;
+END IF;
+END;
+/
+
 -- Vérification que l'emprunteur ne dépasse pas son nombre d'emprunt max
 DROP TRIGGER TRIGGER1;
 CREATE OR REPLACE TRIGGER TRIGGER1
@@ -24,26 +45,7 @@ BEGIN
 END;
 /
 
--- test si un document est pas deja emprunter
-DROP TRIGGER TRIGGER2;
-CREATE OR REPLACE TRIGGER TRIGGER2 
-BEFORE INSERT ON DOCUMENT_BORROWER 
-BEGIN
 
-CREATE LOCAL TEMPORARY VIEW tempo AS 
-SELECT D.Quantity
-FROM Document D
-JOIN Document_Borrower DB  ON DB.DocumentID = D.ID
-WHERE D.ID = NEW.DOCUEMENTID
-
-if (COUNT(SELECT DB.DocumentID
-FROM Document_Borrower DB
-join Document D on DB.DocumentID = D.ID
-Where (DB.DocumentID=NEW.DocumentID  and (DB.dateReturn IS NULL) and D.QUANTITY > 0))> tempo.quantity)
-THEN raise_application_error('-20001', 'All Document Already Borrowed') ;
-END IF;
-END;
-/
 --test si le nombre d'emprunt pour cet categorie de document 
 DROP TRIGGER TRIGGER3;
 CREATE OR REPLACE TRIGGER TRIGGER3
@@ -93,6 +95,7 @@ if(temp.nbBorrowMax>=COUNT(NB_DOC_TYPE))
 then raise_application_error('-20001', 'Document borrow limit reached !') ;
 end if;
 END;
+/
 
 --verifications si l'emprunteur n'est pas en retard
 DROP TRIGGER TRIGGER4;
@@ -106,7 +109,7 @@ Where ( DB.BorrowerID = NEW.BorrowerID and (DB.dateReturn > sysdate )))
 then  raise_application_error('-20001', 'Document(s) en retard !') ;
 end if;
 END;
-
+/
 
 --verification du type d'un document (book)
 DROP TRIGGER TRIGGER5;
@@ -123,3 +126,4 @@ Where (DT.name = 'book')
 then insert into  Book ( DocumentID , nbPages ) values (New.ID, 0);
 end if;
 END;
+/
