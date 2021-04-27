@@ -1,3 +1,9 @@
+-- ######################################################
+-- #         CreateBase.sql - Créé les tables           #
+-- #                                                    #
+-- # Par Vincent Commin, Louis Leenart & Alexis Louail  #
+-- ######################################################
+
 -- AUTEUR ET EDITEUR
 CREATE TABLE Author
 (

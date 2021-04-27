@@ -1,4 +1,10 @@
--- test si un document est pas deja emprunter
+-- ######################################################
+-- #       Triggers.sql - Ajoute les triggers           #
+-- #      WIP - Voir README pour le pseudo-code         #
+-- # Par Vincent Commin, Louis Leenart & Alexis Louail  #
+-- ######################################################
+
+-- test si un document est pas deja emprunté
 DROP TRIGGER TRIGGER2;
 CREATE OR REPLACE TRIGGER TRIGGER2 
 BEFORE INSERT ON DOCUMENT_BORROWER 

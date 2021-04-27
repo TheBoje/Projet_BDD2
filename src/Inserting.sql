@@ -1,6 +1,10 @@
---------------------------------------------------------
---  Fichier cree - lundi-avril-26-2021   
---------------------------------------------------------
+-- ######################################################
+-- #    Inserting.sql - Ajoute les données aux tables   #
+-- #                                                    #
+-- # Par Vincent Commin, Louis Leenart & Alexis Louail  #
+-- ######################################################
+
+
 REM INSERTING into PROJET.AUTHOR
 SET DEFINE OFF;
 Insert into PROJET.AUTHOR (ID,NAME,FIRSTNAME,BIRTHDATE) values ('1','Commin','Vincent',to_date('02/06/00','DD/MM/RR'));

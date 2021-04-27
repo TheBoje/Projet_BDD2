@@ -1,3 +1,9 @@
+-- ######################################################
+-- #          Request.sql - Requêtes du sujet           #
+-- #                                                    #
+-- # Par Vincent Commin, Louis Leenart & Alexis Louail  #
+-- ######################################################
+
 -- 1 Liste par ordre alphabétique des titres de documents dont le thème comprend le mot informatique ou mathematiques
 -- Ici on pourrait mettre un index par hachage sur le mainTheme étant donne une égalisation stricte
 SELECT title 

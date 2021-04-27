@@ -1,3 +1,9 @@
+-- ######################################################
+-- #       DeleteBase.sql - Supprime les tables         #
+-- #                                                    #
+-- # Par Vincent Commin, Louis Leenart & Alexis Louail  #
+-- ######################################################
+
 DROP TABLE AUTHOR CASCADE CONSTRAINTS;
 DROP TABLE BOOK CASCADE CONSTRAINTS;
 DROP TABLE BORROWER CASCADE CONSTRAINTS;

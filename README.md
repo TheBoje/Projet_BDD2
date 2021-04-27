@@ -65,7 +65,7 @@ La hiérarchie de notre projet est la suivante :
 4. A chaque ajout de document, il est nécessaire de déterminer le type auquel il appartient, pour l'ajouter dans la table correspondante.
 5. A l'ajout et au rendu d'un document, mise à jour du nombre de document empruntés par l'emprunteur.
 
-&nbsp;<b>Suite à des problèmes de gestion du temps, et des difficultées à appliquer correctement la syntaxe de SQL, nous n'avons pas terminé la mise en place des différents triggers. Cependant, voici la méthode que nous aurions appliqué pour chacun des cas.</b>
+&nbsp;<b>Suite à des problèmes de gestion du temps, et des difficultés à appliquer correctement la syntaxe de SQL, nous n'avons pas terminé la mise en place des différents triggers. Cependant, voici la méthode que nous aurions appliqué pour chacun des cas.</b>
 
 1. Verification lors de l'emprunt si les exemplaires ne sont pas tous déjà empruntés (c'est-à-dire qu'au moins 1 exemplaire est disponible) :
 ```
@@ -148,9 +148,9 @@ A chaque suppression sur Document_Borrower
 - Des documents
 - Des emprunts
 
-&nbsp;Pour rendre le remplissage plus facile, nous avons d'abord remplit la base de données via sqldevelopper puis nous l'avons exporté dans un fichier sql.
+&nbsp;Pour rendre le remplissage plus facile, nous avons d'abord remplit la base de données via SQLdevelopper puis nous l'avons exporté dans un fichier sql.
 # 6. Interrogation de la base de données multimédia
-&nbsp;L'interrogation de la base de données multimédia est assuré par les requetes contenues dans le fichier `src/Request.sql`. Les requêtes sont les suivantes :
+&nbsp;L'interrogation de la base de données multimédia est assuré par les requêtes contenues dans le fichier `src/Request.sql`. Les requêtes sont les suivantes :
 
 ## 1. Liste par ordre alphabétique des titres de documents dont le thème comprend le mot informatique ou mathématiques
 ```sql
