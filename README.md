@@ -88,9 +88,9 @@ A chaque ajout sur Document_borrower
     -> Join entre Borrower, BorrowerType, Document_Borrower, Document, DocumentType et BorrowerType_DocumentType
         Récupération de nbBorrow et nbBorrowMax du document/emprunteur en question
     
-    ->  Si nbBorrow + 1 <= nbBorrowMax
-        Alors L'emprunt est validé
-        Sinon L'emprunt est refusé
+    ->  Si nbBorrow + 1 > nbBorrowMax
+        Alors L'emprunt est refusé
+        Sinon Mise à jour de nbBorrow (+1)
 ```
 On note que ce trigger fais appel à de nombreuses jointures pour pouvoir récupérer les bonnes données. De ce fait, si les tables sont menées à grandir, l'ordre des jointures doit être examiné afin de réduire le temps de calcul.
 

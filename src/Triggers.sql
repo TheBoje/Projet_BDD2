@@ -4,6 +4,36 @@
 -- # Par Vincent Commin, Louis Leenart & Alexis Louail  #
 -- ######################################################
 
+CREATE OR REPLACE TRIGGER TRIGGER_MAX_BORROW_COUNT
+    BEFORE INSERT OR UPDATE ON DOCUMENT_BORROWER
+    FOR EACH ROW
+DECLARE local_nb_borrow   INT;
+        local_max_borrow  INT;
+BEGIN
+    SELECT B.nbBorrow, BT_DT.nbBorrowMax
+    INTO local_nb_borrow, local_max_borrow
+    FROM    BORROWER B, 
+            DOCUMENT D, 
+            BORROWERTYPE BT, 
+            DOCUMENTTYPE DT, 
+            BORROWERTYPE_DOCUMENTTYPE BT_DT
+    WHERE   D.ID = :NEW.DOCUMENTID          AND
+            B.ID = :NEW.BORROWERID          AND
+            D.DOCUMENTTYPEID = DT.ID        AND
+            DT.ID = BT_DT.DOCUMENTTYPEID    AND
+            BT.ID = BT_DT.DORROWERTYPEID    AND
+            BT.ID = B.BORROWERTYPEID
+
+    IF (local_nb_borrow + 1 > local_max_borrow)
+    THEN RAISE_APPLICATION_ERROR(-20001, "Nombre d'emprunts total est atteint, vous ne pouvez pas emprunter plus de documents.")
+    ELSE 
+        UPDATE BORROWER B
+        SET NBBORROW = NBBORROW + 1
+        WHERE :NEW.BORROWERID = B.ID
+    END IF;
+END;
+/
+
 -- test si un document est pas deja emprunté
 DROP TRIGGER TRIGGER2;
 CREATE OR REPLACE TRIGGER TRIGGER2 
@@ -24,33 +54,6 @@ THEN raise_application_error('-20001', 'All Document Already Borrowed') ;
 END IF;
 END;
 /
-
--- Vérification que l'emprunteur ne dépasse pas son nombre d'emprunt max
-DROP TRIGGER TRIGGER1;
-CREATE OR REPLACE TRIGGER TRIGGER1
-    BEFORE INSERT 
-    ON Document_Borrower 
-    FOR EACH ROW
-DECLARE
-    max_borrow      INT;
-    current_borrow  INT;
-BEGIN
-    SELECT BT.nbBorrowMax, B.nbBorrow
-    INTO max_borrow, current_borrow
-    FROM BorrowerType BT, Borrower B
-    WHERE :NEW.BorrowerID = B.ID 
-      AND B.BorrowerTypeID = BT.ID;
-
-    IF (current_borrow + 1 > max_borrow)
-    THEN RAISE_APPLICATION_ERROR('-20001', 'Document already borrowed');
-    ELSE
-        UPDATE Borrower B
-        SET current_borrow = current_borrow + 1 
-        WHERE :NEW.BorrowerID = B.ID;
-    END IF;
-END;
-/
-
 
 --test si le nombre d'emprunt pour cet categorie de document 
 DROP TRIGGER TRIGGER3;
