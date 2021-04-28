@@ -130,7 +130,8 @@ insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID,dateReturn )valu
 select * from document_Borrower where documentid = 1 and BorrowerID = 1;
 /
 
---verification du type d'un document (book)
+
+--verification du type d'un document 
 CREATE OR REPLACE TRIGGER trigger_type
 AFTER INSERT ON DOCUMENT
 FOR EACH ROW
@@ -140,20 +141,33 @@ BEGIN
   SELECT DT.name into doc_type
     FROM DocumentType DT 
    WHERE DT.ID = :NEW.DocumentTypeID;
-   if doc_type='book' then 
+   if doc_type='Book' then 
      insert into  Book ( DocumentID , nbPages ) values (:New.ID, 0);
-   else
-        raise_application_error('-20001', 'Le document n''est pas un livre');
+   elsif doc_type='CD' then 
+     insert into  CD ( DocumentID ) values (:New.ID);
+    elsif doc_type='DVD' then 
+     insert into  DVD ( DocumentID) values (:New.ID);
+    elsif doc_type='Video' then 
+     insert into  video ( DocumentID  ) values (:New.ID);
+    else
+        raise_application_error('-20001', 'Le document n''est pas d''un type reconnu');
    end if;
 END;
 /
 -- test
-insert into documenttype values (1, 'book');
-insert into documenttype values (2, 'books');
+insert into documenttype values (1, 'Book');
+insert into documenttype values (2, 'DVD');
+insert into documenttype values (3, 'CD');
+insert into documenttype values (4, 'Video');
+insert into documenttype values (5, 'books');
 -- positif
 insert into document (id, documenttypeid) values (1, 1);
 select * from book where documentid = 1;
--- negatif
 insert into document (id, documenttypeid) values (2, 2);
-select * from document where id = 2;
+insert into document (id, documenttypeid) values (3, 3);
+insert into document (id, documenttypeid) values (4, 4);
+select * from document;
+-- negatif
+insert into document (id, documenttypeid) values (5, 5);
+select * from document where id = 5;
 /
