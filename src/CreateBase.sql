@@ -122,6 +122,7 @@ CREATE TABLE BorrowerType_DocumentType
     BorrowerTypeID      INT NOT NULL,
     DocumentTypeID      INT NOT NULL,
     durationBorrowMax   INT,
+    nbBorrowMax         INT,
 
     PRIMARY KEY (BorrowerTypeID, DocumentTypeID),
     CONSTRAINT fk_borrowertype_documenttype_borrowertype FOREIGN KEY (BorrowerTypeID) REFERENCES BorrowerType(ID),
