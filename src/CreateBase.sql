@@ -143,12 +143,13 @@ CREATE TABLE Borrower
 
 CREATE TABLE Document_Borrower
 (
+    BorrowID    INT NOT NULL,
     DocumentID  INT NOT NULL,
     BorrowerID  INT NOT NULL,
     dateStart   DATE,
     dateReturn  DATE,
 
-    PRIMARY KEY (DocumentID, BorrowerID),
+    PRIMARY KEY (BorrowID ,DocumentID, BorrowerID),
     CONSTRAINT fk_document_borrower_document FOREIGN KEY (DocumentID) REFERENCES Document(ID),
     CONSTRAINT fk_document_borrower_borrower FOREIGN KEY (BorrowerID) REFERENCES Borrower(ID)
 );

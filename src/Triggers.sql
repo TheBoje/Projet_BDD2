@@ -8,11 +8,25 @@
 CREATE OR REPLACE TRIGGER TRIGGER_MAX_BORROW_COUNT
     BEFORE INSERT OR UPDATE ON DOCUMENT_BORROWER
     FOR EACH ROW
-DECLARE local_nb_borrow   INT;
+DECLARE 
+        Doc_type Document.DocumentTypeID%type;
+        
+        local_nb_borrow   INT;
         local_max_borrow  INT;
 BEGIN
-    SELECT B.nbBorrow, BT_DT.nbBorrowMax
-    INTO local_nb_borrow, local_max_borrow
+
+    select D.DocumentTypeID into Doc_type
+        From Document D
+        Where D.ID =:NEW.DocumentID;
+
+    select count(*) into local_nb_borrow
+     From DOCUMENT_BORROWER DB
+        join Document D on D.ID = DB.DocumentID
+        where D.DocumentTypeID = Doc_type ;
+
+
+    SELECT BT_DT.nbBorrowMax
+    INTO  local_max_borrow
     FROM    BORROWER B, 
             DOCUMENT D, 
             BORROWERTYPE BT, 
@@ -34,6 +48,21 @@ BEGIN
     END IF;
 END;
 /
+-- test
+insert into documenttype values (1, 'book');
+insert into document (id, documenttypeid,quantity) values (1, 1, 3);
+insert into BorrowerType values(1,1);
+insert into Borrower(ID,BorrowerTypeID) values(1,1);
+insert into BorrowerType_DocumentType (BorrowerTypeID,DocumentTypeID,nbBorrowMax) values (1,1,2);    
+
+-- positif
+insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (1,1,1);
+select * from document_Borrower where documentid = 1 and BorrowerID = 1;
+insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (2,1,1);
+-- negatif
+insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (3,1,1);
+select * from document_Borrower where documentid = 1 and BorrowerID = 1;
+/
 
 -- test si un document est pas deja emprunté 
 CREATE OR REPLACE TRIGGER trigger_quantity
@@ -45,17 +74,30 @@ doc_borrow int;
 BEGIN
     SELECT D.Quantity into Quantity_max_doc
         FROM Document D
-        WHERE D.ID = :NEW.DOCUEMENTID;
+        WHERE D.ID = :NEW.DOCUMENTID;
 
     SELECT count(DB.DocumentID) into doc_borrow
         FROM Document_Borrower DB
         join Document D on DB.DocumentID = D.ID
         Where (DB.DocumentID=:NEW.DocumentID  and (DB.dateReturn IS NULL) and D.QUANTITY > 0);
 
-    if (doc_borrow> Quantity_max_doc)
+    if (doc_borrow>= Quantity_max_doc)
         THEN raise_application_error('-20001', 'All Document Already Borrowed') ;
     END IF;
 END;
+/
+-- test
+insert into documenttype values (1, 'book');
+insert into document (id, documenttypeid,quantity) values (1, 1, 2);
+insert into Borrower(ID) values(1);
+
+-- positif
+insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (1,1,1);
+select * from document_Borrower where documentid = 1 and BorrowerID = 1;
+insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (2,1,1);
+-- negatif
+insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (3,1,1);
+select * from document_Borrower where documentid = 1 and BorrowerID = 1;
 /
 
 
@@ -68,11 +110,24 @@ is_late integer;
 BEGIN
     SELECT count(*) into is_late
         FROM Document_Borrower DB
-        Where ( DB.BorrowerID = :NEW.BorrowerID and (DB.dateReturn > sysdate ));
+        Where ( DB.BorrowerID = :NEW.BorrowerID and (DB.dateReturn < sysdate ));
     if is_late>0
         then  raise_application_error('-20001', 'Document(s) en retard !') ;
     end if;
 END;
+/
+-- test
+insert into documenttype values (1, 'book');
+insert into document (id, documenttypeid,quantity) values (1, 1, 3);
+insert into Borrower(ID) values(1);
+
+-- positif
+insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID,dateReturn )values (1,1,1,to_date('20/08/2022','DD/MM/RR'));
+select * from document_Borrower where documentid = 1 and BorrowerID = 1;
+-- negatif
+insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID ,dateReturn)values (2,1,1,to_date('20/08/2020','DD/MM/RR'));
+insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID,dateReturn )values (3,1,1,to_date('20/08/2022','DD/MM/RR'));
+select * from document_Borrower where documentid = 1 and BorrowerID = 1;
 /
 
 --verification du type d'un document (book)
