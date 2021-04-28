@@ -35,122 +35,48 @@ BEGIN
 END;
 /
 
--- test si un document est pas deja emprunté
-DROP TRIGGER TRIGGER2;
-CREATE OR REPLACE TRIGGER TRIGGER2 
+-- test si un document est pas deja emprunté 
+CREATE OR REPLACE TRIGGER trigger_quantity
 BEFORE INSERT ON DOCUMENT_BORROWER 
+for each row
 DECLARE 
 Quantity_max_doc   INT;
-doc_borrow Document_Borrower.DocumentID%type;
-
-
+doc_borrow int;
 BEGIN
- 
-SELECT D.Quantity
-into Quantity_max_doc
-FROM Document D
-JOIN Document_Borrower DB  ON DB.DocumentID = D.ID
-WHERE D.ID = :NEW.DOCUEMENTID
+    SELECT D.Quantity into Quantity_max_doc
+        FROM Document D
+        WHERE D.ID = :NEW.DOCUEMENTID;
 
-SELECT DB.DocumentID
-into doc_borrow
-FROM Document_Borrower DB
-join Document D on DB.DocumentID = D.ID
-Where (DB.DocumentID=:NEW.DocumentID  and (DB.dateReturn IS NULL) and D.QUANTITY > 0)
-if (COUNT(doc_borrow)> Quantity_max_doc)
-THEN raise_application_error('-20001', 'All Document Already Borrowed') ;
-END IF;
+    SELECT count(DB.DocumentID) into doc_borrow
+        FROM Document_Borrower DB
+        join Document D on DB.DocumentID = D.ID
+        Where (DB.DocumentID=:NEW.DocumentID  and (DB.dateReturn IS NULL) and D.QUANTITY > 0);
+
+    if (doc_borrow> Quantity_max_doc)
+        THEN raise_application_error('-20001', 'All Document Already Borrowed') ;
+    END IF;
 END;
 /
 
---test si le nombre d'emprunt pour cet categorie de document 
-DROP TRIGGER TRIGGER3;
-CREATE OR REPLACE TRIGGER TRIGGER3
-BEFORE INSERT ON DOCUMENT_BORROWER 
-DECLARE
-doc_type Document.DOCUMENTTYPEID%type;
-tempiddoc2 DocumentType.ID%type;
-
-tempidborrow1 Borrower.BORROWERTYPEID%type;
-tempidborrow2 BorrowerType.BORROWERTYPEID%type;
-tempidborrow3 BorrowerType_DocumentType%type;
-
-temp BorrowerType_DocumentType.nbBorrowMax%type;
-NB_DOC_TYPE 
-
-BEGIN
-
-
-SELECT D.DOCUMENTTYPEID
-into tempiddoc1
-FROM Document D
-WHERE D.ID = NEW.DOCUEMENTID;
-
-
-SELECT DT.ID 
-into tempiddoc2
-FROM DocumentType DT
-where D.ID = tempiddoc1;
-
-
-SELECT B.BORROWERTYPEID
-into tempidborrow1
-FROM Borrower B
-WHERE B.ID = NEW.DOCUEMENTID;
-
-SELECT BT.BorrowerID
-into tempidborrow2
-FROM BorrowerType BT
-where BT.ID = tempidborrow1
-JOIN tempidborrow1  ON .ID
-
-
-SELECT *
-into tempidborrow3
-FROM BorrowerType_DocumentType BT_DT
-where BT_DT.ID = tempidborrow2
-
-
-SELECT tempidborrow3.nbBorrowMax
-into temp
-FROM tempidborrow3
-where tempidborrow3.BORROWERTYPEID = tempiddoc2
-
-CREATE OR REPLACE LOCAL TEMPORARY VIEW  AS 
-SELECT DB.DocumentID,DB.BorrowerID
-into 
-FROM Document_Borrower DB
-Where ((DB.DocumentID=NEW.DocumentID and DB.BorrowerID = NEW.BorrowerID) and(DB.dateReturn IS NULL))
-
-
-if(temp.nbBorrowMax>=COUNT(NB_DOC_TYPE))
-then raise_application_error('-20001', 'Document borrow limit reached !') ;
-end if;
-END;
-/
 
 --verifications si l'emprunteur n'est pas en retard
-CREATE OR REPLACE TRIGGER TRIGGER4
+create or replace NONEDITIONABLE TRIGGER trigger_return_late
 BEFORE INSERT ON DOCUMENT_BORROWER 
+for each row
 DECLARE 
 is_late integer;
 BEGIN
-
-SELECT count(*)
-into
-is_late
-FROM Document_Borrower DB
-Where ( DB.BorrowerID = :NEW.BorrowerID and (DB.dateReturn > sysdate ))
-
-if is_late>0
-then  raise_application_error('-20001', 'Document(s) en retard !') ;
-end if;
+    SELECT count(*) into is_late
+        FROM Document_Borrower DB
+        Where ( DB.BorrowerID = :NEW.BorrowerID and (DB.dateReturn > sysdate ));
+    if is_late>0
+        then  raise_application_error('-20001', 'Document(s) en retard !') ;
+    end if;
 END;
 /
 
 --verification du type d'un document (book)
---verification du type d'un document (book)
-CREATE OR REPLACE TRIGGER TRIGGER5 
+CREATE OR REPLACE TRIGGER trigger_type
 AFTER INSERT ON DOCUMENT
 FOR EACH ROW
 DECLARE 
