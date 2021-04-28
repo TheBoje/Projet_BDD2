@@ -4,6 +4,7 @@
 -- # Par Vincent Commin, Louis Leenart & Alexis Louail  #
 -- ######################################################
 
+-- Vérification que le nombre d'emprunts maximum de l'emprunteur n'est pas dépassé
 CREATE OR REPLACE TRIGGER TRIGGER_MAX_BORROW_COUNT
     BEFORE INSERT OR UPDATE ON DOCUMENT_BORROWER
     FOR EACH ROW
@@ -25,7 +26,7 @@ BEGIN
             BT.ID = B.BORROWERTYPEID ;
 
     IF (local_nb_borrow + 1 > local_max_borrow)
-    THEN RAISE_APPLICATION_ERROR(-20001, "Nombre d'emprunts total est atteint, vous ne pouvez pas emprunter plus de documents.");
+    THEN RAISE_APPLICATION_ERROR(-20001, 'Nombre d emprunts total est atteint, vous ne pouvez pas emprunter plus de documents.');
     ELSE 
         UPDATE BORROWER B
         SET NBBORROW = NBBORROW + 1

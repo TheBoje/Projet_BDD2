@@ -113,8 +113,7 @@ CREATE TABLE Document_Author
 CREATE TABLE BorrowerType
 (
     ID          INT PRIMARY KEY NOT NULL,
-    borrower    VARCHAR(20),
-    nbBorrowMax INT
+    borrower    VARCHAR(20)
 );
 
 CREATE TABLE BorrowerType_DocumentType
