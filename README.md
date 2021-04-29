@@ -1,6 +1,6 @@
 # Projet de base de données
 
-Ce projet est à réaliser avant le 3 mai 2021, dans le cadre de l'Unité d'Enseignement "Bases de Données 2". Ce projet porte sur la création et l'utilisation d'une base de données multimédia, et est à réaliser en trinôme.
+Ce projet est à réaliser avant le 3 mai 2021, dans le cadre de l'Unité d'Enseignement "Bases de Données 2". Il porte sur la création et l'utilisation d'une base de données multimédia.
 
 Composition de notre groupe : **Vincent Commin**, **Louis Leenart** & **Alexis Louail**.
 
@@ -17,12 +17,12 @@ La hiérarchie de notre projet est la suivante :
 │    ├─── DeleteBase.sql            # Supprime les tables
 │    ├─── Inserting.sql             # Ajoute les données aux tables
 │    ├─── Request.sql               # Requêtes du sujet
-│    └─── Triggers.sql              # Ajoute les triggers (WIP)
+│    └─── Triggers.sql              # Ajoute les triggers
 │
 ├───VisualParadigme                 # Fichiers de visual paradigme
 │    └─── ...
 ├─── README.md                      # Ce fichier 
-├─── README.pdf                     # README.md converti en pdf
+├─── README.pdf                     # README.md convertit en pdf
 └─── sujet.pdf                      # Sujet du projet
 ```
 # 1. Conception de la base de données multimédia
@@ -31,16 +31,16 @@ La hiérarchie de notre projet est la suivante :
 
 ![schéma entité association](/images/entity_relationship.png) 
 
-&nbsp;Grâce à se schéma entité association, nous avons pu en déduire le schéma relationnel suivant :
+&nbsp;Grâce à ce schéma entité association, nous avons pu en déduire le schéma relationnel suivant :
 
 ![schéma relationnel](/images/Projet_BDD2.png)
 
 ## Problème rencontré
 
-&nbsp;Durant la réalisation du schéma, nous nous sommes confronté à un problème majeur qui été la gestion des documents. En effet la médiathèque propose plusieurs types de documents (dans un premier temps : vidéos, CD, DVD, livres). Ces différents documents ont la plupart de leurs champs en communs mais certains en ont en plus. 
+&nbsp;Durant la réalisation du schéma, nous nous sommes confrontés à un problème majeur qui été la gestion des documents. En effet la médiathèque propose plusieurs types de documents (dans un premier temps : vidéos, CD, DVD, livres). Ces différents documents ont la plupart de leurs champs en communs mais certains en ont en plus. 
 
 &nbsp;Nous avons, dans un premiers temps, pensé à de l'héritage de table (comme pour de l'héritage en Programmation Orienté Objet). Cette technique n'était pas concluante car il aurait alors fallut mettre tous les champs de la table `Document` dans toutes les autres tables. Et donc, s'il nous faudrait rajouter un type de document, cela serait fastidieux. 
-&nbsp;La deuxième solution qui nous est venue est d'attribuer une clé primaire unique qui se serait partagée entre tous les types de documents. Ainsi pour faire les requêtes il nous faut joindre tous les types de documents à chaque fois.  
+&nbsp;La deuxième solution qui nous est venue est d'attribuer une clé primaire unique qui se serait partagée entre tous les types de documents. Ainsi pour faire les requêtes il nous faut joindre tous les types de documents à chaque fois. La solution qui a été retenue est donc un mélange entre la clé primaire partagée avec `Document` et l'ajout d'une table `DocumentType` qui nous permet de connaître à l'avance le type du document.
 
 # 2. Création de la base de données multimédia
 
@@ -58,16 +58,16 @@ La hiérarchie de notre projet est la suivante :
 
 # 4. Vérification de la cohérence de la base
 
-&nbsp;Pour la cohérence de la base de donnée nous nous somme centrée autour de plusieurs points : 
-1. Verification lors de l'emprunt si les exemplaires ne sont pas tous déjà empruntés (c'est-à-dire qu'au moins 1 exemplaire est disponible).
-2. Le nombre d'emprunt maximal d'une personne (valeur dépendant de la catégorie de l'emprunteur et du document) ne doit pas être dépassé avec l'emprunt d'un nouveau document.
-3. Si un emprunteur est en retard pour la remise d'au moins 1 document, alors il ne peut pas en emprunter d'autres avant de le(s) avoir rendu(s).
+&nbsp;Pour la cohérence de la base de donnée nous nous sommes centrés autour de plusieurs points : 
+1. Verification lors de l'emprunt si les exemplaires ne sont pas tous déjà empruntés (c'est-à-dire qu'au moins un exemplaire est disponible).
+2. Le nombre d'emprunts maximal d'une personne (valeur dépendant de la catégorie de l'emprunteur et du document) qui ne doit pas être dépassé lors de l'emprunt d'un nouveau document.
+3. Si un emprunteur est en retard pour la remise d'au moins un document, alors il ne peut pas en emprunter d'autres avant de le(s) avoir rendu(s).
 4. A chaque ajout de document, il est nécessaire de déterminer le type auquel il appartient, pour l'ajouter dans la table correspondante.
-5. A l'ajout et au rendu d'un document, mise à jour du nombre de document empruntés par l'emprunteur.
+5. A l'ajout et au rendu d'un document, met à jour du nombre de document empruntés par l'emprunteur.
 
-&nbsp;<b>Suite à des problèmes de gestion du temps, et des difficultés à appliquer correctement la syntaxe de SQL, nous n'avons pas terminé la mise en place des différents triggers. Cependant, voici la méthode que nous aurions appliqué pour chacun des cas.</b>
+&nbsp;Pour nous aider dans la création des triggers, nous les avons, au préalable, écrit en pseudo-code.
 
-1. Verification lors de l'emprunt si les exemplaires ne sont pas tous déjà empruntés (c'est-à-dire qu'au moins 1 exemplaire est disponible) :
+1. Verification lors de l'emprunt si les exemplaires ne sont pas tous déjà empruntés (c'est-à-dire qu'au moins un exemplaire est disponible) :
 ```
 A chaque ajout sur Document_borrower
     ->  Join entre Document et Document_borrower
@@ -94,7 +94,7 @@ A chaque ajout sur Document_borrower
 ```
 On note que ce trigger fais appel à de nombreuses jointures pour pouvoir récupérer les bonnes données. De ce fait, si les tables sont menées à grandir, l'ordre des jointures doit être examiné afin de réduire le temps de calcul.
 
-3. Si un emprunteur est en retard pour la remise d'au moins 1 document, alors il ne peut pas en emprunter d'autres avant de le(s) avoir rendu(s).
+3. Si un emprunteur est en retard pour la remise d'au moins un document, alors il ne peut pas en emprunter d'autres avant de le(s) avoir rendu(s).
 
 ```
 A chaque ajout sur Document_Borrower
@@ -139,7 +139,7 @@ A chaque suppression sur Document_Borrower
 ```
 
 # 5. Remplissage de la base de données multimédia
-&nbsp;Le remplissage de notre base de données est assuré par le fichier `src/Inserting.sql`, dans lequel on ajoute :
+&nbsp;Le remplissage de notre base de données est assurée par le fichier `src/Inserting.sql`, dans lequel on ajoute :
 - Les types d'emprunteur `Personnel`, `Professionnel` et `Public`
 - Les types de document `Livre`, `DVD`, `CD` et `Video`
 - Des auteurs
@@ -148,9 +148,9 @@ A chaque suppression sur Document_Borrower
 - Des documents
 - Des emprunts
 
-&nbsp;Pour rendre le remplissage plus facile, nous avons d'abord remplit la base de données via SQLdevelopper puis nous l'avons exporté dans un fichier sql.
+&nbsp;Pour rendre le remplissage plus facile, nous avons d'abord rempli la base de données via SQLdevelopper puis nous l'avons exporté dans un fichier sql.
 # 6. Interrogation de la base de données multimédia
-&nbsp;L'interrogation de la base de données multimédia est assuré par les requêtes contenues dans le fichier `src/Request.sql`. Les requêtes sont les suivantes :
+&nbsp;L'interrogation de la base de données multimédia est assurée par les requêtes contenues dans le fichier `src/Request.sql`. Les requêtes sont les suivantes :
 
 ## 1. Liste par ordre alphabétique des titres de documents dont le thème comprend le mot informatique ou mathématiques
 ```sql
@@ -434,7 +434,7 @@ WHERE
 
 # 7. Optimisation des requêtes
 ## 1. Liste par ordre alphabétique des titres de documents dont le thème comprend le mot informatique ou mathématiques
-Ici on pourrait mettre un index par hachage sur le `Document.mainTheme` étant donné une égalisation stricte.
+Ici on pourrait mettre un index par hachage sur le `Document.mainTheme` étant donné une égalité stricte.
 ## 2. Liste (titre et thème) des documents empruntés par Dupont entre le 15/11/2018 et le 15/11/2019
 Ici nous pourrions utiliser un Arbre-b sur la date `Document_Borrower.dateStart` étant donné les inégalités.
 ## 3. Pour chaque emprunteur, donner la liste des titres des documents qu'il a empruntés avec le nom des auteurs pour chaque document
