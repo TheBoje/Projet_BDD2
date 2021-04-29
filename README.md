@@ -63,11 +63,10 @@ La hiérarchie de notre projet est la suivante :
 2. Le nombre d'emprunts maximal d'une personne (valeur dépendant de la catégorie de l'emprunteur et du document) qui ne doit pas être dépassé lors de l'emprunt d'un nouveau document.
 3. Si un emprunteur est en retard pour la remise d'au moins un document, alors il ne peut pas en emprunter d'autres avant de le(s) avoir rendu(s).
 4. A chaque ajout de document, il est nécessaire de déterminer le type auquel il appartient, pour l'ajouter dans la table correspondante.
-5. A l'ajout et au rendu d'un document, met à jour du nombre de document empruntés par l'emprunteur.
 
 &nbsp;Pour nous aider dans la création des triggers, nous les avons, au préalable, écrit en pseudo-code.
 
-1. Verification lors de l'emprunt si les exemplaires ne sont pas tous déjà empruntés (c'est-à-dire qu'au moins un exemplaire est disponible) :
+1. Vérification lors de l'emprunt si les exemplaires ne sont pas tous déjà empruntés (c'est-à-dire qu'au moins un exemplaire est disponible) :
 ```
 A chaque ajout sur Document_borrower
     ->  Join entre Document et Document_borrower
@@ -92,7 +91,6 @@ A chaque ajout sur Document_borrower
         Alors L'emprunt est refusé
         Sinon Mise à jour de nbBorrow (+1)
 ```
-On note que ce trigger fais appel à de nombreuses jointures pour pouvoir récupérer les bonnes données. De ce fait, si les tables sont menées à grandir, l'ordre des jointures doit être examiné afin de réduire le temps de calcul.
 
 3. Si un emprunteur est en retard pour la remise d'au moins un document, alors il ne peut pas en emprunter d'autres avant de le(s) avoir rendu(s).
 
@@ -128,16 +126,7 @@ A chaque ajout sur <type_doc>
 )
 ```
 
-5. A l'ajout et au rendu d'un document, mise à jour du nombre de document empruntés par l'emprunteur.
-```
-A chaque ajout sur Document_Borrower
-    ->  Modification Document.quantity -= 1 (l'ajout du nbBorrow dans Borrower est géré dans un autre trigger)
-
-A chaque suppression sur Document_Borrower
-    ->  Modification Document.quantity += 1
-    ->  Modification Borrower.nbBorrow -= 1
-```
-
+- **Important:** Pour chaque trigger dans `Triggers.sql`, nous avons mis en place des requetes de tests pour vérifier la mise en place de ces derniers. Pour le bon fonctionnement de ces tests, il faut les décommenter puis executer dans une base vide. Chaque trigger retrouvera ses tests juste en dessous de sa définition.
 # 5. Remplissage de la base de données multimédia
 &nbsp;Le remplissage de notre base de données est assurée par le fichier `src/Inserting.sql`, dans lequel on ajoute :
 - Les types d'emprunteur `Personnel`, `Professionnel` et `Public`

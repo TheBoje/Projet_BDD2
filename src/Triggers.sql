@@ -4,6 +4,45 @@
 -- # Par Vincent Commin, Louis Leenart & Alexis Louail  #
 -- ######################################################
 
+-- test si un document est pas déjà emprunté 
+CREATE OR REPLACE TRIGGER TRIGGER_QUANTITY
+    BEFORE INSERT ON DOCUMENT_BORROWER 
+    FOR EACH ROW
+DECLARE 
+    quantity_max_doc    INT;
+    doc_borrow          INT;
+BEGIN
+    SELECT D.QUANTITY INTO quantity_max_doc
+        FROM DOCUMENT D
+        WHERE D.ID = :NEW.DOCUMENTID;
+
+    SELECT COUNT(DB.DOCUMENTID) 
+    INTO doc_borrow
+    FROM DOCUMENT_BORROWER DB
+    JOIN DOCUMENT D ON DB.DOCUMENTID = D.ID
+    WHERE DB.DOCUMENTID = :NEW.DOCUMENTID  AND
+          DB.DATERETURN IS NULL AND
+          D.QUANTITY > 0;
+
+    IF (doc_borrow >= quantity_max_doc)
+    THEN RAISE_APPLICATION_ERROR('-20001', 'All Document Already Borrowed') ;
+    END IF;
+END;
+/
+-- test
+-- insert into documenttype values (1, 'book');
+-- insert into document (id, documenttypeid,quantity) values (1, 1, 2);
+-- insert into Borrower(ID) values(1);
+
+-- positif
+-- insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (1,1,1);
+-- select * from document_Borrower where documentid = 1 and BorrowerID = 1;
+-- insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (2,1,1);
+-- negatif
+-- insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (3,1,1);
+-- select * from document_Borrower where documentid = 1 and BorrowerID = 1;
+-- /
+
 -- Vérification que le nombre d'emprunts maximum de l'emprunteur n'est pas dépassé
 CREATE OR REPLACE TRIGGER TRIGGER_MAX_BORROW_COUNT
     BEFORE INSERT OR UPDATE ON DOCUMENT_BORROWER
@@ -65,46 +104,6 @@ END;
 -- select * from document_Borrower where documentid = 1 and BorrowerID = 1;
 -- /
 
--- test si un document est pas deja emprunté 
-CREATE OR REPLACE TRIGGER TRIGGER_QUANTITY
-    BEFORE INSERT ON DOCUMENT_BORROWER 
-    FOR EACH ROW
-DECLARE 
-    quantity_max_doc    INT;
-    doc_borrow          INT;
-BEGIN
-    SELECT D.QUANTITY INTO quantity_max_doc
-        FROM DOCUMENT D
-        WHERE D.ID = :NEW.DOCUMENTID;
-
-    SELECT COUNT(DB.DOCUMENTID) 
-    INTO doc_borrow
-    FROM DOCUMENT_BORROWER DB
-    JOIN DOCUMENT D ON DB.DOCUMENTID = D.ID
-    WHERE DB.DOCUMENTID = :NEW.DOCUMENTID  AND
-          DB.DATERETURN IS NULL AND
-          D.QUANTITY > 0;
-
-    IF (doc_borrow >= quantity_max_doc)
-    THEN RAISE_APPLICATION_ERROR('-20001', 'All Document Already Borrowed') ;
-    END IF;
-END;
-/
--- test
--- insert into documenttype values (1, 'book');
--- insert into document (id, documenttypeid,quantity) values (1, 1, 2);
--- insert into Borrower(ID) values(1);
-
--- positif
--- insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (1,1,1);
--- select * from document_Borrower where documentid = 1 and BorrowerID = 1;
--- insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (2,1,1);
--- negatif
--- insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (3,1,1);
--- select * from document_Borrower where documentid = 1 and BorrowerID = 1;
--- /
-
-
 -- verification que l'emprunteur n'est pas en retard
 CREATE OR REPLACE NONEDITIONABLE TRIGGER TRIGGER_LATE_RETURN
     BEFORE INSERT ON DOCUMENT_BORROWER 
@@ -138,7 +137,7 @@ END;
 -- /
 
 
---verification du type d'un document 
+-- verification du type d'un document 
 CREATE OR REPLACE TRIGGER TRIGGER_TYPE
     AFTER INSERT ON DOCUMENT
     FOR EACH ROW
