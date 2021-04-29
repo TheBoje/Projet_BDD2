@@ -48,126 +48,132 @@ BEGIN
     END IF;
 END;
 /
--- test
-insert into documenttype values (1, 'book');
-insert into document (id, documenttypeid,quantity) values (1, 1, 3);
-insert into BorrowerType values(1,1);
-insert into Borrower(ID,BorrowerTypeID) values(1,1);
-insert into BorrowerType_DocumentType (BorrowerTypeID,DocumentTypeID,nbBorrowMax) values (1,1,2);    
+-- tests - à faire avec tables vides
+-- insert into documenttype(ID, name) values (1, 'book');
+-- insert into document (id, documenttypeid,quantity) values (1, 1, 3);
+-- insert into BorrowerType values(1,1);
+-- insert into Borrower(ID,BorrowerTypeID) values(1,1);
+-- insert into BorrowerType_DocumentType (BorrowerTypeID,DocumentTypeID,nbBorrowMax) values (1,1,2);    
 
 -- positif
-insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (1,1,1);
-select * from document_Borrower where documentid = 1 and BorrowerID = 1;
-insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (2,1,1);
+-- insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (1,1,1);
+-- select * from document_Borrower where documentid = 1 and BorrowerID = 1;
+-- insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (2,1,1);
 -- negatif
-insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (3,1,1);
-select * from document_Borrower where documentid = 1 and BorrowerID = 1;
-/
+-- insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (3,1,1);
+-- select * from document_Borrower where documentid = 1 and BorrowerID = 1;
+-- /
 
 -- test si un document est pas deja emprunté 
-CREATE OR REPLACE TRIGGER trigger_quantity
-BEFORE INSERT ON DOCUMENT_BORROWER 
-for each row
+CREATE OR REPLACE TRIGGER TRIGGER_QUANTITY
+    BEFORE INSERT ON DOCUMENT_BORROWER 
+    FOR EACH ROW
 DECLARE 
-Quantity_max_doc   INT;
-doc_borrow int;
+    quantity_max_doc    INT;
+    doc_borrow          INT;
 BEGIN
-    SELECT D.Quantity into Quantity_max_doc
-        FROM Document D
+    SELECT D.QUANTITY INTO quantity_max_doc
+        FROM DOCUMENT D
         WHERE D.ID = :NEW.DOCUMENTID;
 
-    SELECT count(DB.DocumentID) into doc_borrow
+    SELECT COUNT(DB.DocumentID) 
+        INTO doc_borrow
         FROM Document_Borrower DB
-        join Document D on DB.DocumentID = D.ID
-        Where (DB.DocumentID=:NEW.DocumentID  and (DB.dateReturn IS NULL) and D.QUANTITY > 0);
+        JOIN Document D ON DB.DocumentID = D.ID
+        WHERE   DB.DocumentID=:NEW.DocumentID  AND
+                DB.dateReturn IS NULL AND
+                D.QUANTITY > 0;
 
-    if (doc_borrow>= Quantity_max_doc)
-        THEN raise_application_error('-20001', 'All Document Already Borrowed') ;
+        IF (doc_borrow >= quantity_max_doc)
+        THEN RAISE_APPLICATION_ERROR('-20001', 'All Document Already Borrowed') ;
     END IF;
 END;
 /
 -- test
-insert into documenttype values (1, 'book');
-insert into document (id, documenttypeid,quantity) values (1, 1, 2);
-insert into Borrower(ID) values(1);
+-- insert into documenttype values (1, 'book');
+-- insert into document (id, documenttypeid,quantity) values (1, 1, 2);
+-- insert into Borrower(ID) values(1);
 
 -- positif
-insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (1,1,1);
-select * from document_Borrower where documentid = 1 and BorrowerID = 1;
-insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (2,1,1);
+-- insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (1,1,1);
+-- select * from document_Borrower where documentid = 1 and BorrowerID = 1;
+-- insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (2,1,1);
 -- negatif
-insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (3,1,1);
-select * from document_Borrower where documentid = 1 and BorrowerID = 1;
-/
+-- insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID )values (3,1,1);
+-- select * from document_Borrower where documentid = 1 and BorrowerID = 1;
+-- /
 
 
 --verifications si l'emprunteur n'est pas en retard
-create or replace NONEDITIONABLE TRIGGER trigger_return_late
-BEFORE INSERT ON DOCUMENT_BORROWER 
-for each row
+CREATE OR REPLACE NONEDITIONABLE TRIGGER TRIGGER_LATE_RETURN
+    BEFORE INSERT ON DOCUMENT_BORROWER 
+    FOR EACH ROW
 DECLARE 
-is_late integer;
+    is_late INT;
 BEGIN
-    SELECT count(*) into is_late
-        FROM Document_Borrower DB
-        Where ( DB.BorrowerID = :NEW.BorrowerID and (DB.dateReturn < sysdate ));
-    if is_late>0
-        then  raise_application_error('-20001', 'Document(s) en retard !') ;
-    end if;
+    SELECT count(*) 
+        INTO is_late
+        FROM DOCUMENT_BORROWER DB
+        WHERE   DB.BorrowerID = :NEW.BorrowerID AND
+                DB.dateReturn < sysdate;
+
+    IF (is_late > 0)
+    THEN RAISE_APPLICATION_ERROR('-20001', 'Document(s) en retard !');
+    END IF;
 END;
 /
 -- test
-insert into documenttype values (1, 'book');
-insert into document (id, documenttypeid,quantity) values (1, 1, 3);
-insert into Borrower(ID) values(1);
+-- insert into documenttype values (1, 'book');
+-- insert into document (id, documenttypeid,quantity) values (1, 1, 3);
+-- insert into Borrower(ID) values(1);
 
 -- positif
-insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID,dateReturn )values (1,1,1,to_date('20/08/2022','DD/MM/RR'));
-select * from document_Borrower where documentid = 1 and BorrowerID = 1;
+-- insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID,dateReturn )values (1,1,1,to_date('20/08/2022','DD/MM/RR'));
+-- select * from document_Borrower where documentid = 1 and BorrowerID = 1;
 -- negatif
-insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID ,dateReturn)values (2,1,1,to_date('20/08/2020','DD/MM/RR'));
-insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID,dateReturn )values (3,1,1,to_date('20/08/2022','DD/MM/RR'));
-select * from document_Borrower where documentid = 1 and BorrowerID = 1;
-/
+-- insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID ,dateReturn)values (2,1,1,to_date('20/08/2020','DD/MM/RR'));
+-- insert into document_Borrower ( Borrowid,DocumentID ,BorrowerID,dateReturn )values (3,1,1,to_date('20/08/2022','DD/MM/RR'));
+-- select * from document_Borrower where documentid = 1 and BorrowerID = 1;
+-- /
 
 
 --verification du type d'un document 
-CREATE OR REPLACE TRIGGER trigger_type
-AFTER INSERT ON DOCUMENT
-FOR EACH ROW
+CREATE OR REPLACE TRIGGER TRIGGER_TYPE
+    AFTER INSERT ON DOCUMENT
+    FOR EACH ROW
 DECLARE 
-   doc_type DocumentType.name%type;
+    doc_type DocumentType.name%type;
 BEGIN
-  SELECT DT.name into doc_type
-    FROM DocumentType DT 
-   WHERE DT.ID = :NEW.DocumentTypeID;
-   if doc_type='Book' then 
-     insert into  Book ( DocumentID , nbPages ) values (:New.ID, 0);
-   elsif doc_type='CD' then 
-     insert into  CD ( DocumentID ) values (:New.ID);
-    elsif doc_type='DVD' then 
-     insert into  DVD ( DocumentID) values (:New.ID);
-    elsif doc_type='Video' then 
-     insert into  video ( DocumentID  ) values (:New.ID);
-    else
-        raise_application_error('-20001', 'Le document n''est pas d''un type reconnu');
-   end if;
+    SELECT DT.name into doc_type
+        FROM DocumentType DT 
+    WHERE DT.ID = :NEW.DocumentTypeID;
+
+    IF doc_type = 'Book' 
+    THEN INSERT INTO  Book (DocumentID, nbPages) VALUES (:NEW.ID, 0);
+    ELSIF doc_type = 'CD' 
+    THEN INSERT INTO CD (DocumentID) VALUES (:NEW.ID);
+    ELSIF doc_type = 'DVD' 
+    THEN INSERT INTO DVD (DocumentID) VALUES (:NEW.ID);
+    ELSIF doc_type = 'Video' 
+    THEN INSERT INTO video (DocumentID) VALUES (:NEW.ID);
+    ELSE RAISE_APPLICATION_ERROR('-20001', 'Le document n''est pas d''un type reconnu');
+    END IF;
 END;
 /
 -- test
-insert into documenttype values (1, 'Book');
-insert into documenttype values (2, 'DVD');
-insert into documenttype values (3, 'CD');
-insert into documenttype values (4, 'Video');
-insert into documenttype values (5, 'books');
+-- insert into documenttype values (1, 'Book');
+-- insert into documenttype values (2, 'DVD');
+-- insert into documenttype values (3, 'CD');
+-- insert into documenttype values (4, 'Video');
+-- insert into documenttype values (5, 'books');
 -- positif
-insert into document (id, documenttypeid) values (1, 1);
-select * from book where documentid = 1;
-insert into document (id, documenttypeid) values (2, 2);
-insert into document (id, documenttypeid) values (3, 3);
-insert into document (id, documenttypeid) values (4, 4);
-select * from document;
+-- insert into document (id, documenttypeid) values (1, 1);
+-- select * from book where documentid = 1;
+-- insert into document (id, documenttypeid) values (2, 2);
+-- insert into document (id, documenttypeid) values (3, 3);
+-- insert into document (id, documenttypeid) values (4, 4);
+-- select * from document;
 -- negatif
-insert into document (id, documenttypeid) values (5, 5);
-select * from document where id = 5;
-/
+-- insert into document (id, documenttypeid) values (5, 5);
+-- select * from document where id = 5;
+-- /
