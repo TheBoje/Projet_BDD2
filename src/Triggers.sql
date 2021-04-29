@@ -144,7 +144,8 @@ CREATE OR REPLACE TRIGGER TRIGGER_TYPE
 DECLARE 
     doc_type DocumentType.name%type;
 BEGIN
-    SELECT DT.name into doc_type
+    SELECT DT.name 
+        INTO doc_type
         FROM DocumentType DT 
     WHERE DT.ID = :NEW.DocumentTypeID;
 
