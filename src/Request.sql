@@ -246,7 +246,7 @@ CREATE OR REPLACE TYPE number_tt AS TABLE OF NUMBER;
 WITH document_keywords_agg(documentid, title, keywordlist, keywordids) AS (
     SELECT d.id, d.title
          , listagg(dk.keywordid, ', ') WITHIN GROUP (ORDER BY dk.keywordid)
-         , CASE(COLLECT(dk.keywordid) AS number_tt)
+         , CAST(COLLECT(dk.keywordid) AS number_tt)
     FROM   Document d
            JOIN document_keywords dk ON dk.documentid = d.id
     GROUP BY d.id, d.title
@@ -262,7 +262,6 @@ WHERE
 -- 20 Liste des documents ayant exactement 
 -- les memes mot-clef que le document dont le titre est "SQL pour les nuls".
 -- Ici nous pouvons mettre un index secondaire sur le nom des mots-clés pour accélérer la recherche de cceux-ci
-CREATE OR REPLACE TYPE number_tt AS TABLE OF NUMBER;
 
 WITH document_keywords_agg(documentid, title, keywordlist, keywordids) AS (
     SELECT d.id, d.title
