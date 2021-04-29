@@ -9,23 +9,24 @@ CREATE OR REPLACE TRIGGER TRIGGER_MAX_BORROW_COUNT
     BEFORE INSERT OR UPDATE ON DOCUMENT_BORROWER
     FOR EACH ROW
 DECLARE 
-        Doc_type Document.DocumentTypeID%type;
-        
-        local_nb_borrow   INT;
-        local_max_borrow  INT;
+    Doc_type DOCU:ENT.DOCUMENTTYPEID%type;
+    
+    local_nb_borrow   INT;
+    local_max_borrow  INT;
+
 BEGIN
+    SELECT D.DOCUMENTTYPEID 
+    INTO Doc_type
+    FROM Document D
+    WHERE D.ID = :NEW.DocumentID;
 
-    select D.DocumentTypeID into Doc_type
-        From Document D
-        Where D.ID =:NEW.DocumentID;
+    SELECT COUNT(*) 
+    INTO local_nb_borrow
+    FROM DOCUMENT_BORROWER DB
+    JOIN DOCUMENT D ON D.ID = DB.DOCUMENTID
+    WHERE D.DOCUMENTTYPEID = Doc_type;
 
-    select count(*) into local_nb_borrow
-     From DOCUMENT_BORROWER DB
-        join Document D on D.ID = DB.DocumentID
-        where D.DocumentTypeID = Doc_type ;
-
-
-    SELECT BT_DT.nbBorrowMax
+    SELECT BT_DT.NBBORROWMAX
     INTO  local_max_borrow
     FROM    BORROWER B, 
             DOCUMENT D, 
@@ -37,7 +38,7 @@ BEGIN
             D.DOCUMENTTYPEID = DT.ID        AND
             DT.ID = BT_DT.DOCUMENTTYPEID    AND
             BT.ID = BT_DT.BORROWERTYPEID    AND
-            BT.ID = B.BORROWERTYPEID ;
+            BT.ID = B.BORROWERTYPEID;
 
     IF (local_nb_borrow + 1 > local_max_borrow)
     THEN RAISE_APPLICATION_ERROR(-20001, 'Nombre d emprunts total est atteint, vous ne pouvez pas emprunter plus de documents.');
@@ -76,16 +77,16 @@ BEGIN
         FROM DOCUMENT D
         WHERE D.ID = :NEW.DOCUMENTID;
 
-    SELECT COUNT(DB.DocumentID) 
-        INTO doc_borrow
-        FROM Document_Borrower DB
-        JOIN Document D ON DB.DocumentID = D.ID
-        WHERE   DB.DocumentID=:NEW.DocumentID  AND
-                DB.dateReturn IS NULL AND
-                D.QUANTITY > 0;
+    SELECT COUNT(DB.DOCUMENTID) 
+    INTO doc_borrow
+    FROM DOCUMENT_BORROWER DB
+    JOIN DOCUMENT D ON DB.DOCUMENTID = D.ID
+    WHERE DB.DOCUMENTID = :NEW.DOCUMENTID  AND
+          DB.DATERETURN IS NULL AND
+          D.QUANTITY > 0;
 
-        IF (doc_borrow >= quantity_max_doc)
-        THEN RAISE_APPLICATION_ERROR('-20001', 'All Document Already Borrowed') ;
+    IF (doc_borrow >= quantity_max_doc)
+    THEN RAISE_APPLICATION_ERROR('-20001', 'All Document Already Borrowed') ;
     END IF;
 END;
 /
@@ -104,7 +105,7 @@ END;
 -- /
 
 
---verifications si l'emprunteur n'est pas en retard
+-- verification que l'emprunteur n'est pas en retard
 CREATE OR REPLACE NONEDITIONABLE TRIGGER TRIGGER_LATE_RETURN
     BEFORE INSERT ON DOCUMENT_BORROWER 
     FOR EACH ROW
@@ -114,8 +115,8 @@ BEGIN
     SELECT count(*) 
         INTO is_late
         FROM DOCUMENT_BORROWER DB
-        WHERE   DB.BorrowerID = :NEW.BorrowerID AND
-                DB.dateReturn < sysdate;
+        WHERE   DB.BORROWERID = :NEW.BORROWERID AND
+                DB.DATERETURN < sysdate;
 
     IF (is_late > 0)
     THEN RAISE_APPLICATION_ERROR('-20001', 'Document(s) en retard !');
@@ -142,21 +143,21 @@ CREATE OR REPLACE TRIGGER TRIGGER_TYPE
     AFTER INSERT ON DOCUMENT
     FOR EACH ROW
 DECLARE 
-    doc_type DocumentType.name%type;
+    doc_type DOCUMENTTYPE.NAME%type;
 BEGIN
-    SELECT DT.name 
-        INTO doc_type
-        FROM DocumentType DT 
-    WHERE DT.ID = :NEW.DocumentTypeID;
+    SELECT DT.NAME 
+    INTO doc_type
+    FROM DOCUMENTTYPE DT 
+    WHERE DT.ID = :NEW.DOCUMENTTYPEID;
 
     IF doc_type = 'Book' 
-    THEN INSERT INTO  Book (DocumentID, nbPages) VALUES (:NEW.ID, 0);
+    THEN INSERT INTO  Book(DocumentID, nbPages) VALUES (:NEW.ID, 0);
     ELSIF doc_type = 'CD' 
-    THEN INSERT INTO CD (DocumentID) VALUES (:NEW.ID);
+    THEN INSERT INTO CD(DocumentID) VALUES (:NEW.ID);
     ELSIF doc_type = 'DVD' 
-    THEN INSERT INTO DVD (DocumentID) VALUES (:NEW.ID);
+    THEN INSERT INTO DVD(DocumentID) VALUES (:NEW.ID);
     ELSIF doc_type = 'Video' 
-    THEN INSERT INTO video (DocumentID) VALUES (:NEW.ID);
+    THEN INSERT INTO video(DocumentID) VALUES (:NEW.ID);
     ELSE RAISE_APPLICATION_ERROR('-20001', 'Le document n''est pas d''un type reconnu');
     END IF;
 END;
