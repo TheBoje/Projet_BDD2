@@ -69,6 +69,7 @@ La hiérarchie de notre projet est la suivante :
 1. Vérification lors de l'emprunt si les exemplaires ne sont pas tous déjà empruntés (c'est-à-dire qu'au moins un exemplaire est disponible) :
 ```
 A chaque ajout sur Document_borrower
+
     ->  Join entre Document et Document_borrower
         Where id du document = l'id du document que l'on souhaite emprunter,
               avec retour indéfini (donc null) 
@@ -84,6 +85,13 @@ A chaque ajout sur Document_borrower
 
 ```
 A chaque ajout sur Document_borrower
+
+	-> select sur Document 
+        Récupération de la categorie du document ajouter en question
+
+	-> Join entre Document_Borrower et Document
+        Récupération de nbBorrow correspondant au nombre de document de la categorie du document en question grace au select precedent
+
     -> Join entre Borrower, BorrowerType, Document_Borrower, Document, DocumentType et BorrowerType_DocumentType
         Récupération de nbBorrow et nbBorrowMax du document/emprunteur en question
     
@@ -96,12 +104,8 @@ A chaque ajout sur Document_borrower
 
 ```
 A chaque ajout sur Document_Borrower
-    ->  Join entre Borrower, BorrowerType, Document_Borrower, Document, DocumentType et BorrowerType_DocumentType
-        Récupération de durationBorrowMax et dateStart
-    ->  Pour chacun des documents empruntés
-            Initialisation de compteur
-            Si dateStart + durationBorrowMax est après la date du jour
-            Alors compteur += 1
+    -> Select Count sur Document_Borrower
+        Récupération du nombre de retard grace a la date du systeme et a la dateRETURN
     
     ->  Si compteur = 0
         Alors L'emprunt est validé
@@ -111,14 +115,14 @@ A chaque ajout sur Document_Borrower
 
 4. A chaque ajout de document, il est nécessaire de déterminer le type auquel il appartient, pour l'ajouter dans la table correspondante.
 ```
-(pour chacun des types de document <nom_type_doc> faisant référence à la table <type_doc> faire)
-A chaque ajout sur <type_doc>
-    ->  Join entre <type_doc>, Document et DocumentType
-        Récupération de DocumentType.name
+A chaque ajout sur Document
 
-    ->  Si DocumentType.name != <nom_type_doc>
-        Alors L'ajout est refusé
-        Sinon L'ajout est validé
+    ->  Select entre Document et DocumentType
+        Récupération de DocumentType.name 
+
+    ->  Si DocumentType.name est egal a l'un des <nom_type_doc>
+        Alors L'ajout est validé  et  fait dans la table <type_doc> associer
+        Sinon L'ajout est refusé
 
 (   Avec:
     <type_doc> => ["Book", "CD", "DVD", "Video"]
