@@ -29,11 +29,11 @@ La hiérarchie de notre projet est la suivante :
 
 &nbsp;Voici le schéma entité association que nous avons réalisé pour le projet :
 
-![schéma entité association](/images/entity_relationship.png) 
+<img src="images/entity_relationship.png">
 
 &nbsp;Grâce à ce schéma entité association, nous avons pu en déduire le schéma relationnel suivant :
 
-![schéma relationnel](/images/Projet_BDD2.png)
+<img src="images/Projet_BDD2.png">
 
 ## Problème rencontré
 
